@@ -22,8 +22,8 @@ const products = [
   { id: 5, name: "Apple Watch SE 3", image: Apple5 },
   { id: 6, name: "Apple TV 4K", image: Apple6 },
   { id: 7, name: "Apple AirPods Pro 3", image: Apple7 },
-    { id: 8, name:  "Apple iPhone 17 Pro (256GB Storage, Cosmic Orange)", image: Apple8 },
-    { id: 9, name: "iPhone Air MagSafe Battery" , image: Apple9 },
+  { id: 8, name: "Apple iPhone 17 Pro (256GB Storage, Cosmic Orange)", image: Apple8 },
+  { id: 9, name: "iPhone Air MagSafe Battery", image: Apple9 },
 ];
 
 export default function PromoRegister() {
@@ -33,68 +33,85 @@ export default function PromoRegister() {
 
   return (
     <Box>
+      <Box
+        sx={{
+          bgcolor: "#b0a9a4",
+          minHeight: "100vh",
+          py: { xs: 4, md: 6 },   
+        }}
+      >
+        <Box sx={{ maxWidth: "1200px", mx: "auto", px: { xs: 2, sm: 3 } }}>
 
-
-    <Box sx={{ bgcolor: "#b0a9a4", minHeight: "100vh", py: 6 }}>
-      <Box sx={{ maxWidth: "1200px", mx: "auto", px: 2 }}>
-
-        <Button
-          variant="contained"
-          onClick={() => navigate(-1)}
-          sx={{ mb: 4, mt: 4, bgcolor: "#c0974b" }}
-        >
-          Back
-        </Button>
-
-        {/* HORIZONTAL LAYOUT */}
-        <Grid
-          container
-          spacing={4}
-          sx={{
-            flexWrap: "nowrap",
-            alignItems: "center",
-          }}
-        >
-          {/* LEFT — PRODUCT IMAGE */}
-          <Grid
-            item
+          <Button
+            variant="contained"
+            onClick={() => navigate(-1)}
             sx={{
-              flex: 1,
-              minWidth: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              textAlign: "center",
+              mb: 4,
+                 mt: { xs: 8, sm: 2 },
+              bgcolor: "#c0974b",
+              width: { xs: "20%", sm: "auto" } 
             }}
           >
-            <Typography variant="h5" fontWeight="bold" mb={2}>
-              {product?.name}
-            </Typography>
+            Back
+          </Button>
 
-            <Box
-              component="img"
-              src={product?.image}
-              alt={product?.name}
+          {/* RESPONSIVE LAYOUT */}
+          <Grid
+            container
+            spacing={4}
+            alignItems="center"
+            justifyContent="center"
+          >
+            {/* LEFT — PRODUCT IMAGE */}
+            <Grid
+              item
+              xs={12}
+              md={6}
               sx={{
-                width: "100%",
-                maxWidth: "380px",
-                objectFit: "contain",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
               }}
-            />
+            >
+              <Typography
+                variant="h5"
+                fontWeight="bold"
+                mb={2}
+                sx={{ px: { xs: 1, sm: 2 } }}
+              >
+                {product?.name}
+              </Typography>
 
-            <Typography mt={2} color="text.secondary">
-              Latest Apple product with stunning design and performance.
-            </Typography>
-          </Grid>
+              <Box
+                component="img"
+                src={product?.image}
+                alt={product?.name}
+                sx={{
+                  width: "100%",
+                  maxWidth: { xs: "260px", sm: "320px", md: "380px" },
+                  objectFit: "contain",
+                }}
+              />
 
-          {/* RIGHT — REGISTER FORM */}
-          <Grid item sx={{ flex: 1, minWidth: 0 }}>
-            <Register />
+              <Typography
+                mt={2}
+                color="text.secondary"
+                sx={{ px: { xs: 2, md: 4 } }}
+              >
+                Latest Apple product with stunning design and performance.
+              </Typography>
+            </Grid>
+
+            {/* RIGHT — REGISTER FORM */}
+            <Grid item xs={12} md={6}>
+              <Register />
+            </Grid>
           </Grid>
-        </Grid>
-      </Box>
-    </Box>
-    <Footer/>
         </Box>
+      </Box>
+
+      <Footer />
+    </Box>
   );
 }

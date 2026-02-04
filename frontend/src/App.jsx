@@ -9,6 +9,7 @@ import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import PromoRegister from "./Pages/PromoRegister";
 import DealPromo from "./Pages/DealPromo";
+import PromoProductDetails from "./Pages/PromoProductDetails";
 
 
 const Home = () => (
@@ -31,6 +32,7 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/promo/:id" element={<PromoRegister />} />
         <Route path="/promo/:id" element={<DealPromo/>} />
+          <Route path="/promo/:id" element={<PromoProductDetails/>} />
       </Routes>
     </>
   );

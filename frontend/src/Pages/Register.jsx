@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import {
   Box,
   Container,
@@ -9,11 +10,13 @@ import {
   Grid,
   InputAdornment,
   IconButton,
+  Alert
 } from "@mui/material";
 import { Visibility, VisibilityOff, CardGiftcard } from "@mui/icons-material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Register() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
   const [values, setValues] = useState({
@@ -24,6 +27,8 @@ export default function Register() {
   });
 
   const [errors, setErrors] = useState({});
+  const [serverMessage, setServerMessage] = useState("");
+  const [serverError, setServerError] = useState("");
 
   const handleChange = (field) => (e) => {
     setValues({ ...values, [field]: e.target.value });
@@ -38,16 +43,42 @@ export default function Register() {
         : "Email is not valid"
       : "Email is required";
     temp.phone = values.phone ? "" : "Phone Number is required";
-    temp.password = values.password ? "" : "Password is required";
+    temp.password = values.password.length >= 6 ? "" : "Minimum 6 characters required";
 
     setErrors(temp);
     return Object.values(temp).every((x) => x === "");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
-      alert("Form submitted successfully!");
+    setServerMessage("");
+    setServerError("");
+
+    if (!validate()) return;
+
+    try {
+      // 🔥 No unused variable now
+      await axios.post("/api/register", values);
+
+      setServerMessage("🎉 Registration Successful! Redirecting to your offer...");
+
+      setValues({
+        name: "",
+        email: "",
+        phone: "",
+        password: "",
+      });
+
+      setTimeout(() => {
+        navigate("/promo/1"); // Redirect to Promo Product Page
+      }, 1500);
+
+    } catch (err) {
+      if (err.response && err.response.data.message) {
+        setServerError(err.response.data.message);
+      } else {
+        setServerError("Server not responding. Please try again.");
+      }
     }
   };
 
@@ -60,7 +91,6 @@ export default function Register() {
         alignItems: "center",
         py: 4,
         pt: 10,
-        
       }}
     >
       <Container maxWidth="sm">
@@ -94,6 +124,9 @@ export default function Register() {
               <Typography variant="h5" fontWeight="bold" mb={3}>
                 Create Account
               </Typography>
+
+              {serverMessage && <Alert severity="success" sx={{ mb: 2 }}>{serverMessage}</Alert>}
+              {serverError && <Alert severity="error" sx={{ mb: 2 }}>{serverError}</Alert>}
 
               <Box component="form" onSubmit={handleSubmit}>
                 <TextField
