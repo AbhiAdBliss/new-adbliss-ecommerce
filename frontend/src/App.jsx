@@ -1,23 +1,24 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Header from "./Components/Header";
+import ScrollToTop from "./Components/ScrollToTop";
+
 import Hero from "./Pages/Hero";
-// import CategoriesSection from "./Pages/CategoriesSection";
-import AppleSection from "./Pages/AppleSection";
-import Deals from "./Pages/Deals";
+import HomePage from "./Pages/HomePage";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
-import PromoRegister from "./Pages/PromoRegister";
 import DealPromo from "./Pages/DealPromo";
-import PromoProductDetails from "./Pages/PromoProductDetails";
+import ProductDetails from "./Pages/ProductDetails";   
+import LoadingScreen from "./Pages/LoadingScreen";
+import AppleSection from "./Pages/AppleSection";
+import Checkout from "./Pages/Checkout";
+import OrderSuccess from "./Pages/OrderSuccess";
 
 
 const Home = () => (
   <>
     <Hero />
-    {/* <CategoriesSection /> */}
-    <AppleSection />
-    <Deals />
+    <HomePage />
   </>
 );
 
@@ -25,14 +26,22 @@ const App = () => {
   return (
     <>
       <Header />
+      <ScrollToTop />
 
       <Routes>
+        <Route path="/loading" element={<LoadingScreen />} />
+        <Route path="/apple" element={<AppleSection />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/order-success" element={<OrderSuccess />} />
+
+        {/* ⭐ NEW PRODUCT DETAILS PAGE */}
+        <Route path="/product/:id" element={<ProductDetails />} />
+
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/promo/:id" element={<PromoRegister />} />
-        <Route path="/promo/:id" element={<DealPromo/>} />
-          <Route path="/promo/:id" element={<PromoProductDetails/>} />
+        <Route path="/deal-promo/:id" element={<DealPromo />} />
+       
       </Routes>
     </>
   );

@@ -4,8 +4,12 @@ import video1 from "../assets/video1.mp4";
 import { Link } from "react-router-dom";
 
 
+
 const Hero = () => {
   return (
+    <Box>
+
+   
     <Box
       sx={{
         position: "relative",
@@ -130,6 +134,9 @@ const Hero = () => {
         </Box>
       </Container>
     </Box>
+
+
+     </Box>
   );
 };
 

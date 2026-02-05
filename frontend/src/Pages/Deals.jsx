@@ -9,14 +9,14 @@ import {
   CardContent,
   Button,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+
 import Deal1 from "../assets/Deals/Deal1.png";
 import Deal2 from "../assets/Deals/Deal2.png";
 import Deal3 from "../assets/Deals/Deal3.png";
 import Deal4 from "../assets/Deals/Deal4.png";
 import Deal5 from "../assets/Deals/Deal5.png";
 import Deal6 from "../assets/Deals/Deal6.png";
-import Footer from "../Components/Footer";
+
 
 const accessories = [
   { id: 1, name: "Samsung Galaxy S25 Ultra 5G (12GB RAM, 256GB Storage) Titanium Silverblue", image: Deal1 },
@@ -28,17 +28,17 @@ const accessories = [
 ];
 
 export default function Deals() {
-  const navigate = useNavigate();
+
 
   return (
     <Box>
-      <Box sx={{ background: "white", py: { xs: 4, md: 8 } }}>
+      <Box sx={{ background: "#fdf9f3ff", py: { xs: 4, md: 8 } }}>
         <Container maxWidth="xl">
           <Typography 
             variant="h4" 
             fontWeight="bold" 
             mb={1}
-            sx={{ textAlign: { xs: "center", sm: "left" } }}
+            sx={{ textAlign: { xs: "center", sm: "center" } }}
           >
             Bestsellers Deals
           </Typography>
@@ -47,7 +47,7 @@ export default function Deals() {
             variant="subtitle1" 
             color="text.secondary" 
             mb={4}
-            sx={{ textAlign: { xs: "center", sm: "left" } }}
+            sx={{ textAlign: { xs: "center", sm: "center" } }}
           >
             Grab the hottest accessories at unbeatable prices!
           </Typography>
@@ -109,7 +109,7 @@ export default function Deals() {
                   <Box sx={{ display: "flex", justifyContent: "center", pb: 3 }}>
                     <Button
                       variant="contained"
-                      onClick={() => navigate(`/promo/${item.id}`)}
+                
                       sx={{
                         width: "140px",
                         height: "40px",
@@ -130,7 +130,7 @@ export default function Deals() {
           </Grid>
         </Container>
       </Box>
-      <Footer />
+      
     </Box>
   );
 }

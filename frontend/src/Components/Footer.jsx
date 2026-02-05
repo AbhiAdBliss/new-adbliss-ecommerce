@@ -7,7 +7,7 @@ import YouTubeIcon from "@mui/icons-material/YouTube";
 
 const Footer = () => {
   return (
-    <Box sx={{ bgcolor: "#111", color: "#fff", pt: { xs: 6, md: 8 }, pb: 4,  }}>
+    <Box sx={{ bgcolor: "#111", color: "#fff", pt: { xs: 6, md: 8 }, pb: 4  }}>
       <Container>
 
         {/* TOP FOOTER */}
