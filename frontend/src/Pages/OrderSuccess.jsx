@@ -4,13 +4,19 @@ import { Link } from "react-router-dom";
 
 export default function OrderSuccess() {
   return (
-    <Box
-      sx={{
-        mt: 15,
-        textAlign: "center",
-        px: 2,
-      }}
-    >
+   <Box
+  sx={{
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    textAlign: "center",
+    px: 2,
+    bgcolor: "#edd3b1ff"
+  }}
+>
+
       <Typography variant="h3" color="green" fontWeight={700} mb={2}>
         🎉 Order Placed Successfully!
       </Typography>

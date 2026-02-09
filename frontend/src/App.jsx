@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Header from "./Components/Header";
 import ScrollToTop from "./Components/ScrollToTop";
 
@@ -8,12 +8,11 @@ import HomePage from "./Pages/HomePage";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import DealPromo from "./Pages/DealPromo";
-import ProductDetails from "./Pages/ProductDetails";   
+import ProductDetails from "./Pages/ProductDetails";
 import LoadingScreen from "./Pages/LoadingScreen";
 import AppleSection from "./Pages/AppleSection";
 import Checkout from "./Pages/Checkout";
 import OrderSuccess from "./Pages/OrderSuccess";
-
 
 const Home = () => (
   <>
@@ -22,10 +21,15 @@ const Home = () => (
   </>
 );
 
-const App = () => {
+function AppContent() {
+  const location = useLocation();
+
+  // ❌ Hide header only on order success page
+  const hideHeader = location.pathname === "/order-success";
+
   return (
     <>
-      <Header />
+      {!hideHeader && <Header />}
       <ScrollToTop />
 
       <Routes>
@@ -34,17 +38,16 @@ const App = () => {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/order-success" element={<OrderSuccess />} />
 
-        {/* ⭐ NEW PRODUCT DETAILS PAGE */}
         <Route path="/product/:id" element={<ProductDetails />} />
-
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/deal-promo/:id" element={<DealPromo />} />
-       
       </Routes>
     </>
   );
-};
+}
 
-export default App;
+export default function App() {
+  return <AppContent />;
+}

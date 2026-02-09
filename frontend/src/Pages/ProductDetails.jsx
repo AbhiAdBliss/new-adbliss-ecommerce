@@ -9,12 +9,11 @@ import {
   TextField,
   Divider
 } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import StarIcon from "@mui/icons-material/Star";
-import { useCart } from "../context/useCart"; 
+import { useCart } from "../context/useCart";
 import Footer from "../Components/Footer";
 
 import Apple1 from "../assets/AppleS-imgs/Apple1.png";
@@ -41,9 +40,10 @@ const products = [
 
 export default function ProductDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const product = products.find(p => p.id === Number(id));
   const [showAllOffers, setShowAllOffers] = useState(false);
-  const { addToCart } = useCart(); // 🛒 USE CART
+  const { addToCart } = useCart();
 
   const offers = [
     "5% cashback on Axis Bank Flipkart Debit Card up to ₹750 per month",
@@ -62,25 +62,19 @@ export default function ProductDetails() {
   return (
     <Box>
       <Box sx={{ mt: 10, px: { xs: 2, md: 6 }, py: 4, bgcolor: "white" }}>
-        <Grid container spacing={8} sx={{ maxWidth: "1400px", margin: "0 auto", flexWrap: "nowrap" }}>
+        <Grid container spacing={{ xs: 4, md: 8 }} sx={{ maxWidth: "1400px", margin: "0 auto" }}>
 
-          {/* LEFT SIDE — IMAGE + BUTTONS */}
+          {/* LEFT SIDE */}
           <Grid item xs={12} md={4}>
             <Paper sx={{ p: 3, textAlign: "center", border: "1px solid #e4e3e3ff" }}>
-              <Box
-                component="img"
-                src={product.image}
-                alt={product.name}
-                sx={{ width: "100%", maxWidth: 500 }}
-              />
+              <Box component="img" src={product.image} alt={product.name} sx={{ width: "100%", maxWidth: 500 }} />
             </Paper>
 
-            {/* BUTTONS BELOW IMAGE */}
-            <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
+            <Box sx={{ mt: 2, display: "flex", gap: 2, flexDirection: { xs: "column", sm: "row" } }}>
               <Button
                 fullWidth
                 variant="contained"
-                onClick={() => addToCart(product)} // 🛒 ADD TO CART ACTION
+                onClick={() => addToCart(product)}
                 sx={{ bgcolor: "#ab803bff", fontWeight: 600, py: 1.2 }}
               >
                 ADD TO CART
@@ -89,6 +83,10 @@ export default function ProductDetails() {
               <Button
                 fullWidth
                 variant="contained"
+                onClick={() => {
+                  addToCart(product);
+                  navigate("/checkout");
+                }}
                 sx={{ bgcolor: "#1b6b9dff", fontWeight: 600, py: 1.2 }}
               >
                 BUY NOW
@@ -96,8 +94,8 @@ export default function ProductDetails() {
             </Box>
           </Grid>
 
-          {/* RIGHT SIDE — DETAILS */}
-          <Grid item xs={12} md={8} sx={{ pl: { md: 4 } }}>
+          {/* RIGHT SIDE */}
+          <Grid item xs={12} md={8}>
             <Typography variant="h5" fontWeight="bold">{product.name}</Typography>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, my: 1 }}>
@@ -123,7 +121,7 @@ export default function ProductDetails() {
                 </Box>
               ))}
               <Typography
-                sx={{ color: "#2874f0", width: "fit-content", fontWeight: 600, cursor: "pointer", mt: 1 }}
+                sx={{ color: "#2874f0", fontWeight: 600, cursor: "pointer", mt: 1 }}
                 onClick={() => setShowAllOffers(!showAllOffers)}
               >
                 {showAllOffers ? "Show less ▲" : "See more offers ▼"}
@@ -134,15 +132,14 @@ export default function ProductDetails() {
 
             {/* DELIVERY */}
             <Typography variant="h6" fontWeight={600}>Delivery</Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, my: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, my: 2, flexWrap: "wrap" }}>
               <LocationOnIcon color="action" />
-              <TextField variant="standard" placeholder="Enter Delivery Pincode" sx={{ width: 220 }} />
+              <TextField variant="standard" placeholder="Enter Delivery Pincode" sx={{ width: { xs: "100%", sm: 220 } }} />
               <Button sx={{ textTransform: "none", fontWeight: 600 }}>Check</Button>
             </Box>
 
             <Divider sx={{ my: 1 }} />
 
-            {/* HIGHLIGHTS */}
             <Typography variant="h6" fontWeight={600}>Highlights</Typography>
             <Box sx={{ pl: 3, color: "text.secondary" }}>
               <Typography>128 GB ROM</Typography>
@@ -153,18 +150,6 @@ export default function ProductDetails() {
 
             <Divider sx={{ my: 1 }} />
 
-            {/* EASY PAYMENT */}
-            <Typography variant="h6" fontWeight={600}>Easy Payment Options</Typography>
-            <Box sx={{ pl: 3, color: "text.secondary" }}>
-              <Typography>No cost EMI starting from ₹6,242/month</Typography>
-              <Typography>Cash on Delivery</Typography>
-              <Typography>Net banking & Credit / Debit / ATM card</Typography>
-            </Box>
-            <Button sx={{ textTransform: "none", px: 0 }}>View Details</Button>
-
-            <Divider sx={{ my: 1 }} />
-
-            {/* SELLER */}
             <Typography variant="h6" fontWeight={600}>Seller</Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Typography color="#2874f0" fontWeight={600}>Truenet Commerce</Typography>
@@ -172,19 +157,12 @@ export default function ProductDetails() {
                 4.5 <StarIcon sx={{ fontSize: 14, ml: 0.5 }} />
               </Box>
             </Box>
-            <Box sx={{ pl: 3, color: "text.secondary" }}>
-              <Typography>7 Days Brand Support <HelpOutlineIcon sx={{ fontSize: 14 }} /></Typography>
-              <Typography>GST invoice available <HelpOutlineIcon sx={{ fontSize: 14 }} /></Typography>
-            </Box>
-            <Button sx={{ textTransform: "none", px: 0 }}>See other sellers</Button>
 
             <Divider sx={{ my: 1 }} />
 
-            {/* DESCRIPTION */}
             <Typography variant="h6" fontWeight={600}>Description</Typography>
             <Typography color="text.secondary">
-              iPhone 16 Plus. Built for Apple Intelligence. Featuring Camera Control.
-              48 MP Fusion camera. Five vibrant colours. And A18 chip.
+              iPhone built for Apple Intelligence. Featuring Camera Control, 48 MP camera and A18 chip.
             </Typography>
           </Grid>
         </Grid>

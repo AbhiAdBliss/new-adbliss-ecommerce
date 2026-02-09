@@ -24,8 +24,8 @@ import Footer from "../Components/Footer";
 export default function Register() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // CAPTCHA GENERATOR
   const generateCaptchaCode = () => {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let code = "";
@@ -35,7 +35,6 @@ export default function Register() {
     return code;
   };
 
-  // ✅ SAFE lazy initialization
   const [captcha, setCaptcha] = useState(() => generateCaptchaCode());
 
   const [values, setValues] = useState({
@@ -43,6 +42,7 @@ export default function Register() {
     email: "",
     phone: "",
     password: "",
+    confirmPassword: "",
     captchaInput: ""
   });
 
@@ -72,6 +72,11 @@ export default function Register() {
     temp.password =
       values.password.length >= 6 ? "" : "Minimum 6 characters required";
 
+    temp.confirmPassword =
+      values.password === values.confirmPassword
+        ? ""
+        : "Passwords do not match";
+
     temp.captchaInput =
       values.captchaInput === captcha ? "" : "Captcha does not match";
 
@@ -87,8 +92,11 @@ export default function Register() {
     if (!validate()) return;
 
     try {
-      await axios.post("http://13.204.45.133/api/register", values, {
-        headers: { "Content-Type": "application/json" }
+      await axios.post("http://13.204.45.133/api/register", {
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+        password: values.password
       });
 
       setServerMessage("🎉 Registration Successful! Redirecting...");
@@ -97,10 +105,10 @@ export default function Register() {
         email: "",
         phone: "",
         password: "",
+        confirmPassword: "",
         captchaInput: ""
       });
 
-      // Regenerate captcha after submit
       setCaptcha(generateCaptchaCode());
 
       setTimeout(() => {
@@ -169,7 +177,8 @@ export default function Register() {
                     value={values.phone} onChange={handleChange("phone")}
                     error={Boolean(errors.phone)} helperText={errors.phone} />
 
-                  <TextField fullWidth required label="Password"
+                  {/* NEW PASSWORD */}
+                  <TextField fullWidth required label="New Password"
                     type={showPassword ? "text" : "password"} margin="normal"
                     value={values.password} onChange={handleChange("password")}
                     error={Boolean(errors.password)} helperText={errors.password}
@@ -184,6 +193,23 @@ export default function Register() {
                     }}
                   />
 
+                  {/* CONFIRM PASSWORD */}
+                  <TextField fullWidth required label="Confirm Password"
+                    type={showConfirmPassword ? "text" : "password"} margin="normal"
+                    value={values.confirmPassword} onChange={handleChange("confirmPassword")}
+                    error={Boolean(errors.confirmPassword)} helperText={errors.confirmPassword}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                            {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+
+                  {/* CAPTCHA */}
                   <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 2 }}>
                     <Typography sx={{
                       fontWeight: "bold",
