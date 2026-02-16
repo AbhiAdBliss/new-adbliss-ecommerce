@@ -1,87 +1,60 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Container,
-  TextField,
-  Typography,
-  Button,
-  Paper,
-  InputAdornment,
-  IconButton
-} from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { Link } from "react-router-dom";
+import { Box, TextField, Button, Typography, Paper } from "@mui/material";
+import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Login() {
-  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form Submitted");
+  const handleLogin = async () => {
+    try {
+      const res = await axios.post("http://13.204.45.133/api/login", {
+        email,
+        password,
+      });
+
+      // ✅ Save user
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      navigate("/apple");
+
+    } catch (err) {
+      alert(err.response?.data?.message || "Login failed");
+    }
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg,#141e30,#243b55)",
-        display: "flex",
-        alignItems: "center"
-      }}
-    >
-      <Container maxWidth="sm">
-        <Paper elevation={6} sx={{ p: 5, borderRadius: 4 }}>
-          <Typography variant="h5" fontWeight="bold" mb={3} align="center">
-            Welcome Back 👋
-          </Typography>
+    <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Paper sx={{ p: 4, width: 350 }}>
+        <Typography variant="h5" mb={2}>Login</Typography>
 
-          {/* FORM START */}
-          <Box component="form" onSubmit={handleSubmit}>
-            <TextField
-              fullWidth
-              label="Email Address"
-              type="email"
-              margin="normal"
-              required
-            />
+        <TextField
+          fullWidth
+          label="Email"
+          margin="normal"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-            <TextField
-              fullWidth
-              label="Password"
-              type={showPassword ? "text" : "password"}
-              margin="normal"
-              required
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                )
-              }}
-            />
+        <TextField
+          fullWidth
+          label="Password"
+          type="password"
+          margin="normal"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              size="large"
-              sx={{ mt: 3, py: 1.5, borderRadius: 3 }}
-            >
-              Login
-            </Button>
-          </Box>
-          {/* FORM END */}
+        <Button fullWidth variant="contained" sx={{ mt: 2 }} onClick={handleLogin}>
+          Login
+        </Button>
 
-          <Typography variant="body2" mt={2} textAlign="center">
-            Don’t have an account?{" "}
-            <Link to="/register" style={{ color: "#1976d2", fontWeight: "bold" }}>
-              Register Now
-            </Link>
-          </Typography>
-        </Paper>
-      </Container>
+        <Typography mt={2}>
+          Don't have an account? <Link to="/register">Register</Link>
+        </Typography>
+      </Paper>
     </Box>
   );
 }

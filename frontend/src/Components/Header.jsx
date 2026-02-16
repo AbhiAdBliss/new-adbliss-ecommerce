@@ -11,7 +11,10 @@ import {
   ListItem,
   ListItemText,
   Divider,
-  Badge
+  Badge,
+  Menu,
+  MenuItem,
+  Avatar,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
@@ -22,23 +25,75 @@ import CartDrawer from "../Components/CartDrawer";
 
 const Header = () => {
   const location = useLocation();
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+
+  // ✅ USER STATE
+  const [user, setUser] = useState(() => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const { cartItems } = useCart();
 
   const toggleDrawer = () => setMobileOpen(!mobileOpen);
 
+  // ✅ Scroll effect
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // ✅ Sync user across tabs
+  useEffect(() => {
+    const syncUser = () => {
+      try {
+        const storedUser = localStorage.getItem("user");
+        setUser(storedUser ? JSON.parse(storedUser) : null);
+      } catch {
+        setUser(null);
+      }
+    };
+
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
+
+  // ✅ Menu handlers
+  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    handleMenuClose();
+  };
+
   const navLinks = ["Why Shopify", "Products", "Pricing", "Enterprise"];
+
   const isProductPage = location.pathname.startsWith("/product");
   const isCheckoutPage = location.pathname.startsWith("/checkout");
+  const isHomePage = location.pathname === "/";
+  const isRegisterPage = location.pathname === "/register";
+  const isLoginPage = location.pathname === "/login";
+  const isApplePage = location.pathname === "/apple";
+
+  // ✅ Hide header on Register OR Cart open
+  if (isRegisterPage || cartOpen)
+    return (
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+    );
+
+  const isMinimalHeader = isCheckoutPage || isLoginPage;
 
   return (
     <>
@@ -46,49 +101,67 @@ const Header = () => {
         position="fixed"
         elevation={0}
         sx={{
-          background: isCheckoutPage || isProductPage || scrolled
-            ? "rgba(122, 89, 52, 0.85)"
+          background: isHomePage
+            ? scrolled
+              ? "rgba(122, 89, 52, 0.95)"
+              : "transparent"
+            : isMinimalHeader || isProductPage || scrolled
+            ? "rgba(122, 89, 52, 0.95)"
             : "transparent",
-          backdropFilter: scrolled && !isProductPage && !isCheckoutPage ? "blur(8px)" : "none",
+          backdropFilter: scrolled ? "blur(8px)" : "none",
           transition: "all 0.4s ease",
           px: { xs: 2, md: 6 },
-          py: 1
+          py: 1,
+          zIndex: 1201,
         }}
       >
-        <Toolbar sx={{ 
-          justifyContent: isCheckoutPage ? "center" : "space-between", // Centers logo on checkout
-          minHeight: "80px" 
-        }}>
-
-          {/* LOGO - Always Visible */}
+        <Toolbar
+          sx={{
+            justifyContent: isMinimalHeader ? "center" : "space-between",
+            minHeight: "80px",
+          }}
+        >
+          {/* LOGO */}
           <Typography
             component={Link}
             to="/"
             variant="h6"
-            sx={{ 
-              fontWeight: "bold", 
-              color: "#fff", 
+            sx={{
+              fontWeight: "bold",
+              color: "#fff",
               textDecoration: "none",
-              fontSize: isCheckoutPage ? "1.5rem" : "1.25rem" // Slightly larger if alone
+              textAlign: "center",
+              fontSize: isMinimalHeader
+                ? { xs: "1.8rem", md: "2.2rem" }
+                : { xs: "1.5rem", md: "1.8rem" },
             }}
           >
             Adbliss Ecommerce
           </Typography>
 
-          {/* HIDE EVERYTHING ELSE ON CHECKOUT */}
-          {!isCheckoutPage && (
+          {!isMinimalHeader && (
             <>
-              {/* DESKTOP NAV LINKS */}
+              {/* DESKTOP LINKS */}
               <Box sx={{ display: { xs: "none", md: "flex" }, gap: 4 }}>
                 {navLinks.map((link) => (
-                  <Typography key={link} sx={{ color: "#fff", fontSize: 17 }}>
+                  <Typography
+                    key={link}
+                    sx={{ color: "#fff", fontSize: 16, cursor: "pointer" }}
+                  >
                     {link}
                   </Typography>
                 ))}
               </Box>
 
-              {/* RIGHT SIDE DESKTOP */}
-              <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2, alignItems: "center" }}>
+              {/* DESKTOP ACTIONS */}
+              <Box
+                sx={{
+                  display: { xs: "none", md: "flex" },
+                  gap: 2,
+                  alignItems: "center",
+                }}
+              >
+                {/* CART */}
                 <Button
                   onClick={() => setCartOpen(true)}
                   variant="outlined"
@@ -98,38 +171,99 @@ const Header = () => {
                     borderRadius: "20px",
                     textTransform: "none",
                     px: 2,
-                    gap: 1,
-                    "&:hover": { borderColor: "#fff" }
                   }}
                 >
                   <Badge badgeContent={cartItems.length} color="error" sx={{ mr: 1 }}>
                     <Box
                       component="img"
                       src={shop}
-                      alt="Cart"
-                      sx={{ width: 18, height: 18, filter: "brightness(0) invert(1)" }}
+                      sx={{
+                        width: 18,
+                        filter: "brightness(0) invert(1)",
+                      }}
                     />
                   </Badge>
                   Cart
                 </Button>
 
-                <Typography component={Link} to="/login" sx={{ color: "#fff", textDecoration: "none" }}>
-                  Log in
-                </Typography>
+                {/* ✅ USER / LOGIN FINAL */}
+                {user ? (
+                  <>
+                    {/* Logged-in Avatar */}
+                    <IconButton onClick={handleMenuOpen}>
+                      <Avatar sx={{ bgcolor: "#fff", color: "#000" }}>
+                        {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                      </Avatar>
+                    </IconButton>
 
-                <Button
-                  component={Link}
-                  to="/register"
-                  variant="contained"
-                  sx={{ backgroundColor: "#fff", color: "#000", borderRadius: "25px", textTransform: "none" }}
-                >
-                  Start for free
-                </Button>
+                    {/* DROPDOWN */}
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl)}
+                      onClose={handleMenuClose}
+                    >
+                      <MenuItem disabled>
+                        {user.name || user.email}
+                      </MenuItem>
+
+                      <Divider />
+
+                      <MenuItem onClick={handleLogout}>
+                        Logout
+                      </MenuItem>
+                    </Menu>
+                  </>
+                ) : isApplePage ? (
+                  // 👤 Apple page default icon
+                  <IconButton component={Link} to="/login">
+                    <Avatar sx={{ bgcolor: "#fff", color: "#000" }}>
+                      U
+                    </Avatar>
+                  </IconButton>
+                ) : (
+                  // Normal pages
+                  <>
+                    <Typography
+                      component={Link}
+                      to="/login"
+                      sx={{ color: "#fff", textDecoration: "none" }}
+                    >
+                      Log in
+                    </Typography>
+
+                    <Button
+                      component={Link}
+                      to="/register"
+                      variant="outlined"
+                      sx={{
+                        color: "white",
+                        border: "1px solid white",
+                        borderRadius: "25px",
+                        textTransform: "none",
+                        ":hover": {
+                          bgcolor: "white",
+                          color: "black",
+                        },
+                      }}
+                    >
+                      Start for free
+                    </Button>
+                  </>
+                )}
               </Box>
 
-              {/* MOBILE RIGHT SIDE */}
-              <Box sx={{ display: { xs: "flex", md: "none" }, alignItems: "center", gap: 1 }}>
-                <IconButton onClick={() => setCartOpen(true)} sx={{ color: "#fff" }}>
+              {/* MOBILE */}
+              <Box
+                sx={{
+                  display: { xs: "flex", md: "none" },
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <IconButton
+                  onClick={() => setCartOpen(true)}
+                  sx={{ color: "#fff" }}
+                >
                   <Badge badgeContent={cartItems.length} color="error">
                     <ShoppingCartIcon />
                   </Badge>
@@ -146,21 +280,22 @@ const Header = () => {
 
       {/* MOBILE DRAWER */}
       <Drawer anchor="right" open={mobileOpen} onClose={toggleDrawer}>
-        <Box sx={{ width: 250 }} onClick={toggleDrawer}>
-          <List>
+        <Box sx={{ width: 280 }} onClick={toggleDrawer}>
+          <List sx={{ mt: 2 }}>
+            <Typography variant="h6" sx={{ px: 2, pb: 1, fontWeight: "bold" }}>
+              Menu
+            </Typography>
+            <Divider />
             {navLinks.map((text) => (
               <ListItem button key={text}>
                 <ListItemText primary={text} />
               </ListItem>
             ))}
           </List>
-          <Divider />
-          <ListItem button component={Link} to="/login">
-            <ListItemText primary="Log in" />
-          </ListItem>
         </Box>
       </Drawer>
 
+      {/* CART DRAWER */}
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </>
   );

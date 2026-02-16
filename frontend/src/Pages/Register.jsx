@@ -19,7 +19,7 @@ import {
   Refresh
 } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
-import Footer from "../Components/Footer";
+
 
 export default function Register() {
   const navigate = useNavigate();
@@ -92,7 +92,7 @@ export default function Register() {
     if (!validate()) return;
 
     try {
-      await axios.post("http://13.204.45.133/api/register", {
+      await axios.post("http://13.233.120.37:5000/api/register", {
         name: values.name,
         email: values.email,
         phone: values.phone,
@@ -121,7 +121,11 @@ export default function Register() {
   };
 
   return (
-    <Box>
+    <Box sx={{background: "#836a4e",}}>
+  <Typography variant="h4" color="white" fontWeight="bold" sx={{pt:5 , textAlign:'center' , fontSize: { xs: "1.5rem", md: "2rem" },}}>
+Unlock the Adbliss Experience 🚀
+      </Typography>
+    
       <Box
         sx={{
           minHeight: "100vh",
@@ -129,10 +133,11 @@ export default function Register() {
           display: "flex",
           alignItems: "center",
           py: 4,
-          pt: 10,
+          pt: 5,
           pb: 20
         }}
       >
+        
         <Container maxWidth="sm">
           <Paper elevation={6} sx={{ borderRadius: 4, overflow: "hidden" }}>
             <Grid container>
@@ -251,7 +256,7 @@ export default function Register() {
         </Container>
       </Box>
 
-      <Footer />
+      
     </Box>
   );
 }

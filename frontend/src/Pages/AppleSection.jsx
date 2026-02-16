@@ -46,51 +46,77 @@ const navigate = useNavigate();
     <Box>
 
       {/* 🎬 HERO VIDEO SECTION */}
-      <Box sx={{ position: "relative", width: "100%", height: { xs: 260, md: 750 }, overflow: "hidden" }}>
-        <video
-          src={bannerVideo}
-          autoPlay
-          muted
-          loop
-          playsInline
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
+     <Box
+  sx={{
+    position: "relative",
+    width: "100%",
+    height: { xs: "55vh", md: "750px" }, 
+    minHeight: { xs: 420, md: 750 },
+    overflow: "hidden"
+  }}
+>
+  {/* VIDEO */}
+  <Box
+    component="video"
+    src={bannerVideo}
+    autoPlay
+    muted
+    loop
+    playsInline
+    sx={{
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      position: "absolute",
+      top: 0,
+      left: 0
+    }}
+  />
 
-        {/* Dark Overlay */}
-        <Box
-          sx={{
-            position: "absolute",
-            inset: 0,
-            bgcolor: "rgba(0,0,0,0.45)",
-          }}
-        />
+  {/* DARK OVERLAY */}
+  <Box
+    sx={{
+      position: "absolute",
+      inset: 0,
+      bgcolor: "rgba(0,0,0,0.45)"
+    }}
+  />
 
-        {/* Text Content */}
-        <Box
-          sx={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            color: "#fff",
-            textAlign: "center",
-            px: 2,
-          }}
-        >
-          <Typography variant="h3" fontWeight="bold">
-            Experience Apple Innovation
-          </Typography>
-          <Typography variant="h6" sx={{ mt: 1, opacity: 0.9 }}>
-            Premium devices. Unmatched performance.
-          </Typography>
-        </Box>
-      </Box>
+  {/* TEXT CONTENT */}
+  <Box
+    sx={{
+      position: "absolute",
+      inset: 0,
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      color: "#fff",
+      textAlign: "center",
+      px: { xs: 2, md: 4 }
+    }}
+  >
+    <Typography
+      sx={{
+        fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" },
+        fontWeight: "bold"
+      }}
+    >
+      Experience Apple Innovation
+    </Typography>
+
+    <Typography
+      sx={{
+        mt: 1,
+        opacity: 0.9,
+        fontSize: { xs: "1rem", sm: "1.2rem", md: "1.4rem" }
+      }}
+    >
+      Premium devices. Unmatched performance.
+    </Typography>
+  </Box>
+</Box>
+
 
       {/* 🛍 PRODUCT SECTION */}
       <Box sx={{ py: { xs: 4, md: 8 }, mt:7 }}>

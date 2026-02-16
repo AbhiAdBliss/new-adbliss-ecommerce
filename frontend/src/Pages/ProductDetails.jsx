@@ -40,7 +40,7 @@ const products = [
 
 export default function ProductDetails() {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const product = products.find(p => p.id === Number(id));
   const [showAllOffers, setShowAllOffers] = useState(false);
   const { addToCart } = useCart();
