@@ -18,22 +18,35 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../context/useCart";
 import CartDrawer from "../Components/CartDrawer";
 
+// ✅ IMPORT VIDEO
+import coinVideo from "../assets/Home-images/Coins.mp4";
+
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [cartOpen, setCartOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
 
   const { cartItems } = useCart();
 
-  // ✅ USER STATE
   const [user, setUser] = useState(null);
 
-  // ✅ CHECK PAGE
   const isHomePage = location.pathname === "/";
+  const isApplePage = location.pathname === "/apple";
 
-  // ✅ LOAD USER + LIVE UPDATE
+  // ✅ SCROLL EFFECT
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // ✅ USER LOAD
   useEffect(() => {
     const updateUser = () => {
       try {
@@ -60,13 +73,24 @@ const Header = () => {
     localStorage.removeItem("user");
     window.dispatchEvent(new Event("userUpdated"));
     setAnchorEl(null);
-    navigate("/"); // ✅ go to HomePage
+    navigate("/");
   };
+
+  const shouldBeTransparent = (isHomePage || isApplePage) && !scrolled;
 
   return (
     <>
-      <AppBar position="fixed" sx={{ bgcolor: "#7a5934" }}>
-        <Toolbar sx={{ justifyContent: "space-between" }}>
+      <AppBar
+        position="fixed"
+        elevation={shouldBeTransparent ? 0 : 4}
+        sx={{
+          bgcolor: shouldBeTransparent ? "transparent" : "#7a5934",
+          transition: "all 0.3s ease",
+          backdropFilter: shouldBeTransparent ? "none" : "blur(6px)",
+          height: 75
+        }}
+      >
+        <Toolbar sx={{ justifyContent: "space-between", height: "100%" }}>
 
           {/* LOGO */}
           <Typography
@@ -85,7 +109,7 @@ const Header = () => {
           {/* RIGHT SIDE */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
 
-            {/* 🛒 CART */}
+            {/* CART */}
             <IconButton
               onClick={() => setCartOpen(true)}
               sx={{ color: "#fff" }}
@@ -95,7 +119,7 @@ const Header = () => {
               </Badge>
             </IconButton>
 
-            {/* 👤 USER SECTION */}
+            {/* USER */}
             {user && !isHomePage ? (
               <>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -112,27 +136,42 @@ const Header = () => {
                     {user.name}
                   </Typography>
 
-                  {/* 💰 COINS */}
+                  {/* 🪙 VIDEO COIN */}
                   <Chip
-                    label={`💰 ${user.coins || 0}`}
+                    label={user.coins || 0}
+                    avatar={
+                      <Box sx={{ width: 24, height: 24 }}>
+                        <video
+                          src={coinVideo}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: "50%"
+                          }}
+                        />
+                      </Box>
+                    }
                     sx={{
-                      bgcolor: "#ffd700",
+                      bgcolor: "#fff8dc",
                       color: "#000",
-                      fontWeight: "bold"
+                      fontWeight: "bold",
+                      px: 1
                     }}
                   />
                 </Box>
 
-                {/* DROPDOWN MENU */}
+                {/* MENU */}
                 <Menu
                   anchorEl={anchorEl}
                   open={Boolean(anchorEl)}
                   onClose={() => setAnchorEl(null)}
                 >
-                  <MenuItem disabled>
-                    {user.email}
-                  </MenuItem>
-
+                  <MenuItem disabled>{user.email}</MenuItem>
                   <Divider />
 
                   <MenuItem onClick={() => navigate("/profile")}>

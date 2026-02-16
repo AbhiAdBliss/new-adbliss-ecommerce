@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
 import axios from "axios";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 export default function OrderSuccess() {
+  const navigate = useNavigate();
 
   useEffect(() => {
     const creditCoins = async () => {
@@ -43,14 +45,47 @@ export default function OrderSuccess() {
   }, []);
 
   return (
-    <Box sx={{ mt: 15, textAlign: "center" }}>
-      <Typography variant="h4">
+    <Box
+      sx={{
+        mt: 15,
+        textAlign: "center",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center"
+      }}
+    >
+      <Typography variant="h4" fontWeight="bold" color="green">
         🎉 Order Successful!
       </Typography>
 
-      <Typography sx={{ mt: 2 }}>
+      <Typography sx={{ mt: 2, fontSize: "18px" }}>
         Coins credited to your account 💰
       </Typography>
+
+      {/* ✅ CONTINUE SHOPPING BUTTON */}
+      <Button
+        variant="contained"
+        size="medium"
+        onClick={() => navigate("/apple")}
+        sx={{
+          mt: 4,
+          px: 4,
+          py: 1.5,
+          fontWeight: "bold",
+          borderRadius: "30px",
+          bgcolor: "#7a5934",
+          textTransform: "none",
+          fontSize: "16px",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+          "&:hover": {
+            bgcolor: "#5a4125",
+            transform: "scale(1.02)"
+          },
+          transition: "all 0.3s ease"
+        }}
+      >
+        Continue Shopping 🛍️
+      </Button>
     </Box>
   );
 }
