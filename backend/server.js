@@ -6,8 +6,16 @@ require("dotenv").config();
 
 const app = express();
 
+/* ================= PORT ================= */
+const PORT = process.env.PORT || 5000;
+
 /* ================= MIDDLEWARE ================= */
-app.use(cors());
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 app.use(express.json());
 
 /* ================= MONGODB CONNECTION ================= */
@@ -26,16 +34,20 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true },
     phone: { type: String, required: true },
     password: { type: String, required: true, minlength: 6 },
+
+    // 💰 COINS SYSTEM
+    coins: {
+      type: Number,
+      default: 0
+    }
   },
   { timestamps: true }
 );
 
 const User = mongoose.model("User", userSchema);
 
-/* ================= REGISTER ROUTE ================= */
+/* ================= REGISTER ================= */
 app.post("/api/register", async (req, res) => {
-  console.log("Incoming Data 👉", req.body);
-
   try {
     const { name, email, phone, password } = req.body;
 
@@ -59,7 +71,6 @@ app.post("/api/register", async (req, res) => {
 
     await newUser.save();
 
-    // ✅ SEND USER DATA BACK
     res.status(201).json({
       message: "User registered successfully 🎉",
       user: {
@@ -67,6 +78,7 @@ app.post("/api/register", async (req, res) => {
         name: newUser.name,
         email: newUser.email,
         phone: newUser.phone,
+        coins: newUser.coins
       },
     });
 
@@ -76,7 +88,7 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-/* ================= LOGIN ROUTE (NEW) ================= */
+/* ================= LOGIN ================= */
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -95,7 +107,6 @@ app.post("/api/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // ✅ SEND USER DATA
     res.status(200).json({
       message: "Login successful ✅",
       user: {
@@ -103,6 +114,7 @@ app.post("/api/login", async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
+        coins: user.coins
       },
     });
 
@@ -112,12 +124,60 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-/* ================= TEST ROUTE ================= */
+/* ================= ORDER + COINS ================= */
+app.post("/api/order", async (req, res) => {
+  try {
+    const { userId, amount } = req.body;
+
+    // ✅ VALIDATION
+    if (!userId || !amount || amount <= 0) {
+      return res.status(400).json({ message: "Invalid order data" });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 💰 ADD COINS
+    user.coins = user.coins + Number(amount);
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Order placed 🎉 Coins credited",
+      coins: user.coins
+    });
+
+  } catch (error) {
+    console.error("Order Error:", error.message);
+    res.status(500).json({ message: "Order failed" });
+  }
+});
+
+/* ================= GET USER (OPTIONAL - BEST PRACTICE) ================= */
+app.get("/api/user/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user);
+
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+/* ================= TEST ================= */
 app.get("/", (req, res) => {
   res.send("API is running 🚀");
 });
 
 /* ================= START SERVER ================= */
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT} 🚀`);
 });

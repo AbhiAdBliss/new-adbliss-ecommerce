@@ -14,6 +14,10 @@ import AppleSection from "./Pages/AppleSection";
 import Checkout from "./Pages/Checkout";
 import OrderSuccess from "./Pages/OrderSuccess";
 
+// ✅ NEW IMPORTS
+import Profile from "./Pages/Profile";
+import ProtectedRoute from "./Components/ProtectedRoute";
+
 const Home = () => (
   <>
     <Hero />
@@ -43,6 +47,16 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/deal-promo/:id" element={<DealPromo />} />
+
+        {/* 🔒 PROTECTED PROFILE */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </>
   );
