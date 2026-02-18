@@ -12,4 +12,7 @@ const userSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model("User", userSchema);
+// 🔥 SET COLLECTION NAME HERE
+module.exports = mongoose.model("User", userSchema, "ecommerce-data");
+
+

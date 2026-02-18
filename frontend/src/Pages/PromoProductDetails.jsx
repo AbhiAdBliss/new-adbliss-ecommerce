@@ -134,7 +134,7 @@ export default function PromoProductDetails() {
 
             {/* Buttons */}
             <Stack direction="row" spacing={2} mt={3}>
-              <Button variant="contained" fullWidth sx={{ bgcolor: "#ff9f00", py: 1.5 }}>
+              <Button variant="contained" fullWidth sx={{ bgcolor: "#ff9f00", py: 1.5, ":hover":{bgcolor:''} }}>
                 ADD TO CART
               </Button>
               <Button variant="contained" fullWidth sx={{ bgcolor: "#fb641b", py: 1.5 }}>

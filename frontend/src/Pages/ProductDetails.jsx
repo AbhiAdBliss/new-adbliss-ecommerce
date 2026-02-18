@@ -27,15 +27,123 @@ import Apple8 from "../assets/AppleS-imgs/Apple8.png";
 import Apple9 from "../assets/AppleS-imgs/Apple9.png";
 
 const products = [
-  { id: 1, name: "Apple iPhone 17 (256GB Storage, Black)", image: Apple1, price: "94,900" },
-  { id: 2, name: "Apple iPhone Air (256GB Storage, Sky Blue)", image: Apple2, price: "69,900" },
-  { id: 3, name: "Apple Macbook Air M4 Chip", image: Apple3, price: "1,24,900" },
-  { id: 4, name: "Apple iPad 11th Gen 2025 Wi-Fi 128GB Blue", image: Apple4, price: "49,900" },
-  { id: 5, name: "Apple Watch SE 3 GPS 44mm Midnight Aluminium Case", image: Apple5, price: "29,900" },
-  { id: 6, name: "Apple TV 4K 128GB Wi-Fi + Ethernet Model", image: Apple6, price: "19,900" },
-  { id: 7, name: "Apple AirPods Pro 3", image: Apple7, price: "24,900" },
-  { id: 8, name: "Apple iPhone 17 Pro (256GB Storage, Cosmic Orange)", image: Apple8, price: "89,900" },
-  { id: 9, name: "iPhone Air MagSafe Battery", image: Apple9, price: "9,900" },
+  {
+    id: 1,
+    name: "Apple iPhone 17 (256GB Storage, Black)",
+    image: Apple1,
+    price: "94,900",
+    features: [
+      "256 GB ROM",
+      "16.0 cm (6.3 inch) Super Retina XDR Display",
+      "48MP + 48MP | 18MP Front Camera",
+      "A19 Chip, 6 Core Processor",
+      "1 Year Apple Warranty"
+    ]
+  },
+  {
+    id: 2,
+    name: "Apple iPhone Air (256GB Storage, Sky Blue)",
+    image: Apple2,
+    price: "69,900",
+    features: [
+      "256 GB ROM",
+      "6.7 inch OLED Display",
+      "64MP Camera",
+      "A18 Chip",
+      "1 Year Warranty"
+    ]
+  },
+  {
+    id: 3,
+    name: "Apple Macbook Air M4 Chip",
+    image: Apple3,
+    price: "1,24,900",
+    features: [
+      "8GB RAM | 256GB SSD",
+      "13.6 inch Retina Display",
+      "M4 Chip Processor",
+      "18 Hours Battery",
+      "1 Year Warranty"
+    ]
+  },
+  {
+    id: 4,
+    name: "Apple iPad 11th Gen 2025",
+    image: Apple4,
+    price: "49,900",
+    features: [
+      "128 GB ROM",
+      "11 inch Display",
+      "12MP Camera",
+      "A16 Chip",
+      "1 Year Warranty"
+    ]
+  },
+  {
+    id: 5,
+    name: "Apple Watch SE 3 GPS 44mm",
+    image: Apple5,
+    price: "29,900",
+    features: [
+      "44mm Display",
+      "Heart Rate Monitor",
+      "GPS Enabled",
+      "Water Resistant",
+      "1 Year Warranty"
+    ]
+  },
+  {
+    id: 6,
+    name: "Apple TV 4K",
+    image: Apple6,
+    price: "19,900",
+    features: [
+      "128 GB Storage",
+      "4K HDR",
+      "Dolby Atmos",
+      "A15 Chip",
+      "1 Year Warranty"
+    ]
+  },
+  {
+    id: 7,
+    name: "Apple AirPods Pro 3",
+    image: Apple7,
+    price: "24,900",
+    features: [
+      "Active Noise Cancellation",
+      "Spatial Audio",
+      "MagSafe Charging",
+      "30 Hours Battery",
+      "1 Year Warranty"
+    ]
+  },
+  {
+    id: 8,
+    name: "Apple iPhone 17 Pro",
+    image: Apple8,
+    price: "89,900",
+    features: [
+      "256 GB ROM",
+      "OLED Display",
+      "50MP Camera",
+      "A19 Pro Chip",
+      "1 Year Warranty"
+    ]
+  },
+  {
+    id: 9,
+    name: "MagSafe Battery Pack",
+    image: Apple9,
+    price: "9,900",
+    features: [
+      "5000mAh Battery",
+      "MagSafe Compatible",
+      "Fast Charging",
+      "Compact Design",
+      "1 Year Warranty"
+    ]
+  }
 ];
 
 export default function ProductDetails() {
@@ -44,6 +152,10 @@ export default function ProductDetails() {
   const product = products.find(p => p.id === Number(id));
   const [showAllOffers, setShowAllOffers] = useState(false);
   const { addToCart } = useCart();
+  const priceNumber = Number(product.price.replace(/,/g, ""));
+const oldPrice = Math.round(priceNumber * 1.15);
+const discount = Math.round(((oldPrice - priceNumber) / oldPrice) * 100);
+
 
   const offers = [
     "5% cashback on Axis Bank Flipkart Debit Card up to ₹750 per month",
@@ -70,28 +182,75 @@ export default function ProductDetails() {
               <Box component="img" src={product.image} alt={product.name} sx={{ width: "100%", maxWidth: 500 }} />
             </Paper>
 
-            <Box sx={{ mt: 2, display: "flex", gap: 2, flexDirection: { xs: "column", sm: "row" } }}>
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={() => addToCart(product)}
-                sx={{ bgcolor: "#ab803bff", fontWeight: 600, py: 1.2 }}
-              >
-                ADD TO CART
-              </Button>
+            <Box
+  sx={{
+    mt: 2,
+    display: "flex",
+    gap: 2,
+    flexDirection: { xs: "column", sm: "row" },
+  }}
+>
+  {/* ADD TO CART */}
+  <Button
+    fullWidth
+    variant="contained"
+    onClick={() => addToCart(product)}
+    sx={{
+      bgcolor: "#2F80ED",
+      color: "#fff",
+      fontWeight: 600,
+      py: 1.2,
+      borderRadius: "10px",
+      boxShadow: "0 4px 14px rgba(47,128,237,0.4)",
+      transition: "all 0.3s ease",
 
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={() => {
-                  addToCart(product);
-                  navigate("/checkout");
-                }}
-                sx={{ bgcolor: "#1b6b9dff", fontWeight: 600, py: 1.2 }}
-              >
-                BUY NOW
-              </Button>
-            </Box>
+      "&:hover": {
+        bgcolor: "#1C6DD0",
+        boxShadow: "0 6px 18px rgba(28,109,208,0.5)",
+        transform: "translateY(-2px)",
+      },
+
+      "&:active": {
+        transform: "scale(0.97)",
+      },
+    }}
+  >
+    ADD TO CART
+  </Button>
+
+  {/* BUY NOW */}
+  <Button
+    fullWidth
+    variant="contained"
+    onClick={() => {
+      addToCart(product);
+      navigate("/checkout");
+    }}
+    sx={{
+      bgcolor: "#9B6DFF",
+      color: "#fff",
+      fontWeight: 600,
+      py: 1.2,
+      borderRadius: "10px",
+      boxShadow: "0 4px 14px rgba(155,109,255,0.4)",
+      transition: "all 0.3s ease",
+
+      "&:hover": {
+        bgcolor: "#7C4DFF",
+        boxShadow: "0 6px 18px rgba(124,77,255,0.5)",
+        transform: "translateY(-2px)",
+      },
+
+      "&:active": {
+        transform: "scale(0.97)",
+      },
+    }}
+  >
+    BUY NOW
+  </Button>
+</Box>
+
+
           </Grid>
 
           {/* RIGHT SIDE */}
@@ -103,13 +262,60 @@ export default function ProductDetails() {
               <Typography color="text.secondary">(4,309 Ratings)</Typography>
             </Box>
 
-            <Typography variant="h3" fontWeight="bold" color="#c0974b">
-              ₹{product.price}
-            </Typography>
+            {/* 🔥 PRICE UI */}
+<Box sx={{ mt: 1 }}>
 
-            <Typography color="green" sx={{ mt: 1 }}>
-              Extra ₹5000 off • Limited Time Offer
-            </Typography>
+  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+
+    {/* NEW PRICE */}
+    <Typography
+      sx={{
+        fontSize: { xs: 28, md: 36 },
+        fontWeight: 700,
+        color: "#c0974b"
+      }}
+    >
+      ₹{priceNumber.toLocaleString("en-IN")}
+    </Typography>
+
+    {/* OLD PRICE */}
+    <Typography
+      sx={{
+        textDecoration: "line-through",
+        color: "#878787",
+        fontSize: "18px"
+      }}
+    >
+      ₹{oldPrice.toLocaleString("en-IN")}
+    </Typography>
+
+    {/* DISCOUNT */}
+    <Typography
+      sx={{
+        color: "#388e3c",
+        fontWeight: 600,
+        fontSize: "16px"
+      }}
+    >
+      {discount}% off
+    </Typography>
+
+  </Box>
+
+  {/* EXTRA OFFER */}
+  <Typography
+    sx={{
+      color: "#388e3c",
+      mt: 1,
+      fontSize: "15px",
+      fontWeight: 500
+    }}
+  >
+    Extra ₹5000 off • Limited Time Offer
+  </Typography>
+
+</Box>
+
 
             {/* OFFERS */}
             <Box sx={{ mt: 4 }}>
@@ -140,13 +346,16 @@ export default function ProductDetails() {
 
             <Divider sx={{ my: 1 }} />
 
-            <Typography variant="h6" fontWeight={600}>Highlights</Typography>
-            <Box sx={{ pl: 3, color: "text.secondary" }}>
-              <Typography>128 GB ROM</Typography>
-              <Typography>17.02 cm (6.7 inch) Super Retina XDR Display</Typography>
-              <Typography>48MP + 12MP | 12MP Front Camera</Typography>
-              <Typography>A18 Chip, 6 Core Processor</Typography>
-            </Box>
+<Box sx={{ pl: 2, color: "text.secondary" }}>
+  {product.features?.map((feature, index) => (
+    <Box key={index} sx={{ display: "flex", gap: 1 }}>
+      <Typography>•</Typography>
+      <Typography>{feature}</Typography>
+    </Box>
+  ))}
+</Box>
+
+
 
             <Divider sx={{ my: 1 }} />
 

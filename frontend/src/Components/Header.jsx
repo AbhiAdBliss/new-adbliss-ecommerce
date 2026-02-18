@@ -91,7 +91,7 @@ const Header = () => {
         position="fixed"
         elevation={shouldBeTransparent ? 0 : 4}
         sx={{
-          bgcolor: shouldBeTransparent ? "transparent" : "#7a5934",
+          bgcolor: shouldBeTransparent ? "transparent" : "#121212",
           transition: "all 0.3s ease",
           backdropFilter: shouldBeTransparent ? "none" : "blur(6px)",
           height: 75

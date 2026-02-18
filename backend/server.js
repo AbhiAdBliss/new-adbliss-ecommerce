@@ -27,45 +27,25 @@ mongoose
     process.exit(1);
   });
 
-/* ================= USER MODEL ================= */
-const userSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true },
-    phone: { type: String, required: true },
-    password: { type: String, required: true, minlength: 6 },
-
-    // 💰 COINS SYSTEM
-    coins: {
-      type: Number,
-      default: 0
-    }
-  },
-  { timestamps: true }
-);
-
-const User = mongoose.model("User", userSchema);
+/* ================= IMPORT MODEL ================= */
+const User = require("./models/User");
 
 /* ================= REGISTER ================= */
 app.post("/api/register", async (req, res) => {
   try {
     const { name, email, phone, password } = req.body;
 
-    // ✅ VALIDATION
     if (!name || !email || !phone || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // ✅ CHECK EXISTING USER
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already registered" });
     }
 
-    // ✅ HASH PASSWORD
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ CREATE USER
     const newUser = new User({
       name,
       email,
@@ -75,7 +55,6 @@ app.post("/api/register", async (req, res) => {
 
     await newUser.save();
 
-    // 🔥 IMPORTANT: SEND CLEAN USER (for frontend header)
     res.status(201).json({
       message: "User registered successfully 🎉",
       user: {
@@ -98,7 +77,6 @@ app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // ✅ VALIDATION
     if (!email || !password) {
       return res.status(400).json({ message: "All fields required" });
     }
@@ -109,14 +87,12 @@ app.post("/api/login", async (req, res) => {
       return res.status(400).json({ message: "User not found" });
     }
 
-    // ✅ CHECK PASSWORD
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // 🔥 SEND USER DATA (for header)
     res.status(200).json({
       message: "Login successful ✅",
       user: {
@@ -149,9 +125,7 @@ app.post("/api/order", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // 💰 ADD COINS
     user.coins += Number(amount);
-
     await user.save();
 
     res.status(200).json({
