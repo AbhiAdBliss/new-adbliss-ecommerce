@@ -6,7 +6,6 @@ const userSchema = new mongoose.Schema({
   phone: String,
   password: String,
 
-  // ✅ COINS SYSTEM
   coins: {
     type: Number,
     default: 0

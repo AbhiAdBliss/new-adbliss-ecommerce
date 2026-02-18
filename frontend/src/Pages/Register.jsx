@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
   Box,
@@ -22,10 +22,18 @@ import { Link, useNavigate } from "react-router-dom";
 export default function Register() {
   const navigate = useNavigate();
 
+  // 🔥 REDIRECT IF ALREADY LOGGED IN
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      navigate("/apple");
+    }
+  }, [navigate]);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // ✅ CAPTCHA (FIXED - no useEffect)
+  // ✅ CAPTCHA
   const generateCaptchaCode = () => {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let code = "";
@@ -115,12 +123,19 @@ export default function Register() {
         }
       );
 
-      // ✅ SAVE USER (IMPORTANT)
+      if (!res.data.user) {
+        throw new Error("Invalid response from server");
+      }
+
+      // ✅ SAVE USER
       localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      // 🔥 UPDATE HEADER
+      window.dispatchEvent(new Event("userUpdated"));
 
       setServerMessage("🎉 Registration Successful!");
 
-      // RESET FORM
+      // RESET
       setValues({
         name: "",
         email: "",
@@ -132,78 +147,53 @@ export default function Register() {
 
       setCaptcha(generateCaptchaCode());
 
-      // REDIRECT
       setTimeout(() => {
         navigate("/apple");
       }, 1200);
 
     } catch (err) {
-      setServerError(err.response?.data?.message || "Server not responding");
+      setServerError(
+        err.response?.data?.message || err.message || "Server not responding"
+      );
     }
   };
 
   return (
-    <Box sx={{ background: "#836a4e", minHeight: "100vh" , pt:3 }}>
+    <Box sx={{ background: "#836a4e", minHeight: "100vh", pt: 2 }}>
       <Box sx={{ display: "flex", alignItems: "center", py: 4 }}>
         <Container maxWidth="sm">
           <Paper elevation={6} sx={{ borderRadius: 4 }}>
             <Grid container>
               <Grid item xs={12} sx={{ p: 3 }}>
 
-                {/* TITLE */}
                 <Typography variant="h4" fontWeight="bold" textAlign="center">
                   Unlock Your Adbliss Account
                 </Typography>
 
-                <Typography
-                  variant="body2"
-                  textAlign="center"
-                  color="text.secondary"
-                  mt={1}
-                >
+                <Typography variant="body2" textAlign="center" color="text.secondary" mt={1}>
                   Join now and explore exclusive deals & offers
                 </Typography>
 
-                {/* ALERTS */}
-                {serverMessage && (
-                  <Alert severity="success" sx={{ mt: 2 }}>
-                    {serverMessage}
-                  </Alert>
-                )}
+                {serverMessage && <Alert severity="success">{serverMessage}</Alert>}
+                {serverError && <Alert severity="error">{serverError}</Alert>}
 
-                {serverError && (
-                  <Alert severity="error" sx={{ mt: 2 }}>
-                    {serverError}
-                  </Alert>
-                )}
-
-                {/* FORM */}
                 <Box component="form" onSubmit={handleSubmit}>
 
-                  <TextField
-                    fullWidth
-                    label="Full Name"
-                    margin="normal"
+                  <TextField fullWidth label="Full Name" margin="normal"
                     value={values.name}
                     onChange={handleChange("name")}
                     error={Boolean(errors.name)}
                     helperText={errors.name}
                   />
 
-                  <TextField
-                    fullWidth
-                    label="Email"
-                    margin="normal"
+                  <TextField fullWidth label="Email" margin="normal"
                     value={values.email}
                     onChange={handleChange("email")}
                     error={Boolean(errors.email)}
                     helperText={errors.email}
                   />
 
-                  <TextField
-                    fullWidth
-                    label="Phone"
-                    margin="normal"
+                  <TextField fullWidth label="Phone" margin="normal"
                     value={values.phone}
                     onChange={handleChange("phone")}
                     error={Boolean(errors.phone)}
@@ -211,9 +201,7 @@ export default function Register() {
                   />
 
                   {/* PASSWORD */}
-                  <TextField
-                    fullWidth
-                    label="Password"
+                  <TextField fullWidth label="Password"
                     type={showPassword ? "text" : "password"}
                     margin="normal"
                     value={values.password}
@@ -223,11 +211,7 @@ export default function Register() {
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton
-                            onClick={() =>
-                              setShowPassword(!showPassword)
-                            }
-                          >
+                          <IconButton onClick={() => setShowPassword(!showPassword)}>
                             {showPassword ? <VisibilityOff /> : <Visibility />}
                           </IconButton>
                         </InputAdornment>
@@ -235,25 +219,14 @@ export default function Register() {
                     }}
                   />
 
-                  {/* PASSWORD STRENGTH */}
                   {values.password && (
-                    <Typography
-                      sx={{
-                        fontSize: "13px",
-                        color: strength.color,
-                        fontWeight: "bold",
-                        mt: -1,
-                        mb: 1
-                      }}
-                    >
+                    <Typography sx={{ fontSize: 13, color: strength.color }}>
                       Strength: {strength.label}
                     </Typography>
                   )}
 
-                  {/* CONFIRM PASSWORD */}
-                  <TextField
-                    fullWidth
-                    label="Confirm Password"
+                  {/* CONFIRM PASSWORD WITH TOGGLE 🔥 */}
+                  <TextField fullWidth label="Confirm Password"
                     type={showConfirmPassword ? "text" : "password"}
                     margin="normal"
                     value={values.confirmPassword}
@@ -263,16 +236,8 @@ export default function Register() {
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton
-                            onClick={() =>
-                              setShowConfirmPassword(!showConfirmPassword)
-                            }
-                          >
-                            {showConfirmPassword ? (
-                              <VisibilityOff />
-                            ) : (
-                              <Visibility />
-                            )}
+                          <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                            {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                           </IconButton>
                         </InputAdornment>
                       )
@@ -281,29 +246,15 @@ export default function Register() {
 
                   {/* CAPTCHA */}
                   <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-                    <Typography
-                      sx={{
-                        fontWeight: "bold",
-                        bgcolor: "#eee",
-                        px: 2,
-                        py: 1
-                      }}
-                    >
+                    <Typography sx={{ bgcolor: "#eee", px: 2, py: 1 }}>
                       {captcha}
                     </Typography>
-
-                    <IconButton
-                      onClick={() =>
-                        setCaptcha(generateCaptchaCode())
-                      }
-                    >
+                    <IconButton onClick={() => setCaptcha(generateCaptchaCode())}>
                       <Refresh />
                     </IconButton>
                   </Box>
 
-                  <TextField
-                    fullWidth
-                    label="Enter Captcha"
+                  <TextField fullWidth label="Enter Captcha"
                     margin="normal"
                     value={values.captchaInput}
                     onChange={handleChange("captchaInput")}
@@ -311,19 +262,13 @@ export default function Register() {
                     helperText={errors.captchaInput}
                   />
 
-                  <Button
-                    fullWidth
-                    type="submit"
-                    variant="contained"
-                    sx={{ mt: 3 }}
-                  >
+                  <Button fullWidth type="submit" variant="contained" sx={{ mt: 3 }}>
                     Register
                   </Button>
                 </Box>
 
                 <Typography mt={2}>
-                  Already have an account?{" "}
-                  <Link to="/login">Login</Link>
+                  Already have an account? <Link to="/login">Login</Link>
                 </Typography>
 
               </Grid>

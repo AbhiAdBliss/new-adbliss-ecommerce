@@ -30,11 +30,15 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
 
   const { cartItems } = useCart();
-
   const [user, setUser] = useState(null);
 
   const isHomePage = location.pathname === "/";
   const isApplePage = location.pathname === "/apple";
+
+  // 🔥 HIDE HEADER ON LOGIN & REGISTER
+  const hideHeader =
+    location.pathname === "/login" ||
+    location.pathname === "/register";
 
   // ✅ SCROLL EFFECT
   useEffect(() => {
@@ -77,6 +81,9 @@ const Header = () => {
   };
 
   const shouldBeTransparent = (isHomePage || isApplePage) && !scrolled;
+
+  // 🔥 RETURN NULL (HIDE HEADER COMPLETELY)
+  if (hideHeader) return null;
 
   return (
     <>
@@ -136,7 +143,7 @@ const Header = () => {
                     {user.name}
                   </Typography>
 
-                  {/* 🪙 VIDEO COIN */}
+                  {/* 🪙 COINS */}
                   <Chip
                     label={user.coins || 0}
                     avatar={
