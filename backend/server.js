@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
+const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 const app = express();
@@ -12,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 /* ================= MIDDLEWARE ================= */
 app.use(cors({
   origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
@@ -30,13 +31,71 @@ mongoose
 /* ================= IMPORT MODEL ================= */
 const User = require("./models/User");
 
+/* ================= MAIL SETUP ================= */
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+/* ================= OTP STORE ================= */
+// ⚠️ Temporary (for production use DB/Redis)
+const otpStore = {};
+
+/* ================= SEND OTP ================= */
+app.post("/api/send-otp", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000);
+
+  otpStore[email] = otp;
+
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Adbliss Email Verification OTP",
+      text: `Your OTP is ${otp}`
+    });
+
+    res.json({ message: "OTP sent successfully ✅" });
+
+  } catch (error) {
+    console.error("OTP Error:", error.message);
+    res.status(500).json({ message: "Failed to send OTP" });
+  }
+});
+
+/* ================= VERIFY OTP ================= */
+app.post("/api/verify-otp", (req, res) => {
+  const { email, otp } = req.body;
+
+  if (otpStore[email] == otp) {
+    delete otpStore[email];
+    return res.json({ success: true });
+  }
+
+  res.status(400).json({ message: "Invalid OTP ❌" });
+});
+
 /* ================= REGISTER ================= */
 app.post("/api/register", async (req, res) => {
   try {
-    const { name, email, phone, password } = req.body;
+    const { name, email, phone, password, isVerified } = req.body;
 
     if (!name || !email || !phone || !password) {
       return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // 🔥 CHECK EMAIL VERIFIED
+    if (!isVerified) {
+      return res.status(400).json({ message: "Email not verified ❌" });
     }
 
     const existingUser = await User.findOne({ email });

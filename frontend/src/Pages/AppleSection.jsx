@@ -216,14 +216,13 @@ export default function AppleSection() {
                     onClick={() => navigate(`/product/${item.id}`)}
                     sx={{
                       borderRadius: 3,
-                      width: 400,
-                      height: 500,
+                      width: 420,
+                      height: 530,
                       cursor: "pointer",
                       overflow: "hidden",
                       transition: "0.3s",
-                      "&:hover": {
-                        boxShadow: "0 12px 24px rgba(0,0,0,0.2)"
-                      },
+                      border:'1px solid #ddddddff',
+                     
                       "&:hover .product-img": {
                         transform: "scale(1.1)"
                       }
@@ -231,7 +230,7 @@ export default function AppleSection() {
                   >
 
                     {/* IMAGE */}
-                    <Box sx={{ position: "relative", height: 220, p: 1, overflow: "hidden" }}>
+                    <Box sx={{ position: "relative", height: 220, p:2, overflow: "hidden", }}>
                       
                       <Box sx={{
                         position: "absolute",

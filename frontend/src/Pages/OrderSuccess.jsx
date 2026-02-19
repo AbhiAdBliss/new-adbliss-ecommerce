@@ -18,14 +18,14 @@ export default function OrderSuccess() {
           "http://13.233.120.37:5000/api/order",
           {
             userId: user.id,
-            amount: amount
+            amount: amount,
           }
         );
 
         // ✅ UPDATE USER
         const updatedUser = {
           ...user,
-          coins: res.data.coins
+          coins: res.data.coins,
         };
 
         localStorage.setItem("user", JSON.stringify(updatedUser));
@@ -35,7 +35,6 @@ export default function OrderSuccess() {
 
         // cleanup
         localStorage.removeItem("orderAmount");
-
       } catch (err) {
         console.log("Coin update error", err);
       }
@@ -47,45 +46,70 @@ export default function OrderSuccess() {
   return (
     <Box
       sx={{
-        mt: 15,
-        textAlign: "center",
+        minHeight: "100vh",
         display: "flex",
-        flexDirection: "column",
-        alignItems: "center"
+        justifyContent: "center",
+        alignItems: "center",
+        background:
+          "linear-gradient(135deg, #121212 0%, #1E1E2F 50%, #2A1B3D 100%)",
       }}
     >
-      <Typography variant="h4" fontWeight="bold" color="green">
-        🎉 Order Successful!
-      </Typography>
-
-      <Typography sx={{ mt: 2, fontSize: "18px" }}>
-        Coins credited to your account 💰
-      </Typography>
-
-      {/* ✅ CONTINUE SHOPPING BUTTON */}
-      <Button
-        variant="contained"
-        size="medium"
-        onClick={() => navigate("/apple")}
+      {/* 🔥 Glass Card */}
+      <Box
         sx={{
-          mt: 4,
-          px: 4,
-          py: 1.5,
-          fontWeight: "bold",
-          borderRadius: "30px",
-          bgcolor: "#7a5934",
-          textTransform: "none",
-          fontSize: "16px",
-          boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-          "&:hover": {
-            bgcolor: "#5a4125",
-            transform: "scale(1.02)"
-          },
-          transition: "all 0.3s ease"
+          p: 5,
+          borderRadius: 4,
+          background: "rgba(255,255,255,0.05)",
+          backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          textAlign: "center",
+          color: "#fff",
+          width: { xs: "90%", sm: "400px" },
         }}
       >
-        Continue Shopping 🛍️
-      </Button>
+        {/* ✅ Success Icon */}
+        <Typography sx={{ fontSize: 50 }}>🎉</Typography>
+
+        {/* ✅ Title */}
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          sx={{ color: "#2F80ED", mt: 1 }}
+        >
+          Order Successful!
+        </Typography>
+
+        {/* ✅ Subtitle */}
+        <Typography sx={{ mt: 2, fontSize: "16px", color: "#ccc" }}>
+          Coins credited to your account 💰
+        </Typography>
+
+        {/* ✅ Button */}
+        <Button
+          variant="contained"
+          size="medium"
+          onClick={() => navigate("/apple")}
+          sx={{
+            mt: 4,
+            px: 5,
+            py: 1.5,
+            fontWeight: "bold",
+            borderRadius: "30px",
+            bgcolor: "#2F80ED",
+            textTransform: "none",
+            fontSize: "16px",
+            boxShadow: "0 4px 15px rgba(47,128,237,0.4)",
+            "&:hover": {
+              bgcolor: "#9B6DFF",
+              transform: "scale(1.05)",
+              boxShadow: "0 6px 20px rgba(155,109,255,0.6)",
+            },
+            transition: "all 0.3s ease",
+          }}
+        >
+          Continue Shopping 🛍️
+        </Button>
+      </Box>
     </Box>
   );
 }
