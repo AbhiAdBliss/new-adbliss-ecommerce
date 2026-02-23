@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -17,7 +17,7 @@ import { useCart } from "../context/useCart";
 import { useNavigate } from "react-router-dom";
 
 export default function Checkout() {
-  const { cartItems, clearCart } = useCart();
+  const { cartItems, clearCart, removeFromCart } = useCart();
   const navigate = useNavigate();
 
   const savedUser = (() => {
@@ -34,6 +34,7 @@ export default function Checkout() {
   const [discount, setDiscount] = useState(0);
   const [couponMsg, setCouponMsg] = useState(null);
   const [paymentError, setPaymentError] = useState(null);
+  const [authError, setAuthError] = useState("");
   const [loading, setLoading] = useState(false);
   const [useCoins, setUseCoins] = useState(false);
 
@@ -51,6 +52,13 @@ export default function Checkout() {
 
   const handleChange = (field) => (e) =>
     setForm({ ...form, [field]: e.target.value });
+
+  /* ================= AUTO REDIRECT IF CART EMPTY ================= */
+  useEffect(() => {
+    if (cartItems.length === 0) {
+      navigate("/apple");
+    }
+  }, [cartItems]);
 
   /* ================= CALCULATIONS ================= */
   const subtotal = cartItems.reduce(
@@ -85,8 +93,23 @@ export default function Checkout() {
   /* ================= PAYMENT ================= */
   const handleOrder = (e) => {
     e.preventDefault();
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    // 🚨 LOGIN CHECK
+    if (!user) {
+      setAuthError("⚠️ Please login or register to continue");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+
+      return;
+    }
+
     setLoading(true);
     setPaymentError(null);
+    setAuthError("");
 
     // ✅ VALIDATION
     if (
@@ -117,7 +140,6 @@ export default function Checkout() {
       name: "Adbliss Ecommerce",
       description: "Order Payment",
 
-      // ✅ SEND SHIPPING DATA
       notes: {
         name: form.name,
         email: form.email,
@@ -173,22 +195,11 @@ export default function Checkout() {
         email: form.email,
       },
 
-      theme: { color: "#c0974b" },
+      theme: { color: "#2F80ED" },
     });
 
     rzp.open();
   };
-
-  if (cartItems.length === 0) {
-    return (
-      <Box sx={{ mt: 15, textAlign: "center" }}>
-        <Typography variant="h4">🛒 Cart is Empty</Typography>
-        <Button sx={{ mt: 2 }} onClick={() => navigate("/apple")}>
-          Shop Now
-        </Button>
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ pt: 15, px: { xs: 2, md: 6 }, bgcolor: "#f5f5f5", pb: 5 }}>
@@ -203,22 +214,50 @@ export default function Checkout() {
           <Grid item xs={12} md={8}>
             <Paper sx={{ p: { xs: 2, md: 4 } }}>
 
+              {/* LOGIN ALERT */}
+              {authError && (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  {authError}
+                </Alert>
+              )}
+
               {/* PRODUCTS */}
               {cartItems.map((item, index) => (
-                <Box key={index} sx={{
-                  display: "flex",
-                  flexDirection: { xs: "column", sm: "row" },
-                  gap: 2,
-                  mb: 2,
-                  p: 2,
-                  borderRadius: 2,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
-                }}>
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
+                    gap: 2,
+                    mb: 2,
+                    p: 2,
+                    borderRadius: 2,
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                    alignItems: "center"
+                  }}
+                >
                   <Avatar src={item.image} sx={{ width: 120, height: 120 }} />
 
                   <Box sx={{ flex: 1 }}>
                     <Typography fontWeight={600}>{item.name}</Typography>
                     <Typography>Qty: {item.quantity}</Typography>
+
+                    {/* 🔥 REMOVE BUTTON */}
+                    <Button
+                      size="small"
+                      sx={{
+                        mt: 1,
+                        color: "#ff4d4f",
+                        textTransform: "none",
+                        fontWeight: "bold",
+                        "&:hover": {
+                          bgcolor: "rgba(255,77,79,0.1)"
+                        }
+                      }}
+                      onClick={() => removeFromCart(item.id)}
+                    >
+                       Remove
+                    </Button>
                   </Box>
 
                   <Typography fontWeight={600}>₹{item.price}</Typography>
@@ -282,8 +321,13 @@ export default function Checkout() {
               <Divider sx={{ my: 2 }} />
 
               {/* COUPON */}
-              <TextField fullWidth label="Coupon Code"
-                value={coupon} onChange={(e) => setCoupon(e.target.value)} sx={{width:200}}/>
+              <TextField
+                fullWidth
+                label="Coupon Code"
+                value={coupon}
+                onChange={(e) => setCoupon(e.target.value)}
+                sx={{ width: 200 }}
+              />
 
               <Button onClick={applyCoupon} sx={{ mt: 1 }}>
                 Apply Coupon
@@ -303,7 +347,7 @@ export default function Checkout() {
           </Grid>
 
           {/* RIGHT */}
-          <Grid item xs={12} md={4} width={400}>
+          <Grid item xs={12} md={4} width={350}>
             <Paper sx={{ p: 3, position: "sticky", top: 100 }}>
 
               <Typography fontWeight={600} fontSize={22}>
@@ -332,8 +376,12 @@ export default function Checkout() {
               <Typography>Coins: {coinsAvailable}</Typography>
 
               <FormControlLabel
-                control={<Checkbox checked={useCoins}
-                  onChange={(e) => setUseCoins(e.target.checked)} />}
+                control={
+                  <Checkbox
+                    checked={useCoins}
+                    onChange={(e) => setUseCoins(e.target.checked)}
+                  />
+                }
                 label="Use Coins"
               />
 
@@ -351,10 +399,14 @@ export default function Checkout() {
                 type="submit"
                 fullWidth
                 variant="contained"
-                sx={{ mt: 3, bgcolor: "#7a5934" }}
-                disabled={loading}
+                sx={{ mt: 3, bgcolor: "#2F80ED" }}
+                disabled={loading || !savedUser}
               >
-                {loading ? <CircularProgress size={24} /> : "Pay Now"}
+                {!savedUser
+                  ? "Login to Continue"
+                  : loading
+                  ? <CircularProgress size={24} />
+                  : "Pay Now"}
               </Button>
 
             </Paper>

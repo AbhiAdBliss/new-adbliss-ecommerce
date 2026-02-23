@@ -11,12 +11,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 /* ================= MIDDLEWARE ================= */
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
-
+app.use(cors());
 app.use(express.json());
 
 /* ================= MONGODB CONNECTION ================= */
@@ -41,34 +36,40 @@ const transporter = nodemailer.createTransport({
 });
 
 /* ================= OTP STORE ================= */
-// ⚠️ Temporary (for production use DB/Redis)
+// { email: { otp: "123456", expires: timestamp, verified: true/false } }
 const otpStore = {};
 
 /* ================= SEND OTP ================= */
 app.post("/api/send-otp", async (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ message: "Email is required" });
-  }
-
-  const otp = Math.floor(100000 + Math.random() * 900000);
-
-  otpStore[email] = otp;
-
   try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    otpStore[email] = {
+      otp,
+      expires: Date.now() + 5 * 60 * 1000,
+      verified: false
+    };
+
+    console.log("📩 OTP for", email, ":", otp);
+
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
-      subject: "Adbliss Email Verification OTP",
-      text: `Your OTP is ${otp}`
+      subject: "Password Reset OTP",
+      text: `Your OTP is ${otp}. It expires in 5 minutes.`
     });
 
     res.json({ message: "OTP sent successfully ✅" });
 
   } catch (error) {
-    console.error("OTP Error:", error.message);
-    res.status(500).json({ message: "Failed to send OTP" });
+    console.error("Send OTP Error:", error.message);
+    res.status(500).json({ message: "Failed to send OTP ❌" });
   }
 });
 
@@ -76,12 +77,55 @@ app.post("/api/send-otp", async (req, res) => {
 app.post("/api/verify-otp", (req, res) => {
   const { email, otp } = req.body;
 
-  if (otpStore[email] == otp) {
-    delete otpStore[email];
-    return res.json({ success: true });
+  const record = otpStore[email];
+
+  if (!record) {
+    return res.status(400).json({ message: "OTP not found ❌" });
   }
 
-  res.status(400).json({ message: "Invalid OTP ❌" });
+  if (Date.now() > record.expires) {
+    delete otpStore[email];
+    return res.status(400).json({ message: "OTP expired ❌" });
+  }
+
+  if (record.otp !== otp.toString()) {
+    return res.status(400).json({ message: "Invalid OTP ❌" });
+  }
+
+  otpStore[email].verified = true;
+
+  return res.json({
+    success: true,
+    message: "OTP verified successfully ✅"
+  });
+});
+
+/* ================= RESET PASSWORD ================= */
+app.post("/api/reset-password", async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    const record = otpStore[email];
+
+    if (!record || !record.verified) {
+      return res.status(400).json({ message: "OTP not verified ❌" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await User.updateOne(
+      { email },
+      { password: hashedPassword }
+    );
+
+    delete otpStore[email];
+
+    res.json({ message: "Password updated successfully ✅" });
+
+  } catch (error) {
+    console.error("Reset Password Error:", error.message);
+    res.status(500).json({ message: "Reset failed ❌" });
+  }
 });
 
 /* ================= REGISTER ================= */
@@ -93,12 +137,12 @@ app.post("/api/register", async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // 🔥 CHECK EMAIL VERIFIED
     if (!isVerified) {
       return res.status(400).json({ message: "Email not verified ❌" });
     }
 
     const existingUser = await User.findOne({ email });
+
     if (existingUser) {
       return res.status(400).json({ message: "Email already registered" });
     }
@@ -109,7 +153,7 @@ app.post("/api/register", async (req, res) => {
       name,
       email,
       phone,
-      password: hashedPassword,
+      password: hashedPassword
     });
 
     await newUser.save();
@@ -122,7 +166,7 @@ app.post("/api/register", async (req, res) => {
         email: newUser.email,
         phone: newUser.phone,
         coins: newUser.coins
-      },
+      }
     });
 
   } catch (error) {
@@ -136,23 +180,19 @@ app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "All fields required" });
-    }
-
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ message: "User not found ❌" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: "Invalid credentials ❌" });
     }
 
-    res.status(200).json({
+    res.json({
       message: "Login successful ✅",
       user: {
         id: user._id,
@@ -160,7 +200,7 @@ app.post("/api/login", async (req, res) => {
         email: user.email,
         phone: user.phone,
         coins: user.coins
-      },
+      }
     });
 
   } catch (error) {
@@ -174,44 +214,30 @@ app.post("/api/order", async (req, res) => {
   try {
     const { userId, amount } = req.body;
 
-    if (!userId || !amount || amount <= 0) {
-      return res.status(400).json({ message: "Invalid order data" });
-    }
-
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found ❌" });
     }
 
     user.coins += Number(amount);
     await user.save();
 
-    res.status(200).json({
+    res.json({
       message: "Order placed 🎉 Coins credited",
       coins: user.coins
     });
 
   } catch (error) {
     console.error("Order Error:", error.message);
-    res.status(500).json({ message: "Order failed" });
+    res.status(500).json({ message: "Order failed ❌" });
   }
 });
 
 /* ================= GET USER ================= */
 app.get("/api/user/:id", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select("-password");
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.json(user);
-
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
+  const user = await User.findById(req.params.id).select("-password");
+  res.json(user);
 });
 
 /* ================= TEST ================= */
