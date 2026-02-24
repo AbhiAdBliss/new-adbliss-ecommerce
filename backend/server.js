@@ -27,7 +27,7 @@ const User = require("./models/User");
 
 /* ================= IMPORT EMAIL UTILS ================= */
 const sendOtpEmail = require("./utils/sendOtpEmail");
-const sendOrderEmail = require("./utils/sendOrderEmail");
+const sendOrderEmail = require("./utils/sendEmail");
 
 /* ================= OTP STORE ================= */
 const otpStore = {};
