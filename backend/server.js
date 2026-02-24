@@ -2,7 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
-const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 const app = express();
@@ -26,14 +25,9 @@ mongoose
 /* ================= IMPORT MODEL ================= */
 const User = require("./models/User");
 
-/* ================= MAIL SETUP ================= */
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+/* ================= IMPORT EMAIL UTILS ================= */
+const sendOtpEmail = require("./utils/sendOtpEmail");
+const sendOrderEmail = require("./utils/sendOrderEmail");
 
 /* ================= OTP STORE ================= */
 const otpStore = {};
@@ -51,12 +45,8 @@ app.post("/api/send-otp", async (req, res) => {
       verified: false
     };
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Password Reset OTP",
-      text: `Your OTP is ${otp}`
-    });
+    // ✅ USE SEPARATE FILE
+    await sendOtpEmail(email, otp);
 
     res.json({ message: "OTP sent ✅" });
 
@@ -120,7 +110,8 @@ app.post("/api/register", async (req, res) => {
       name,
       email,
       phone,
-      password: hashedPassword
+      password: hashedPassword,
+      coins: 0
     });
 
     res.json({
@@ -141,25 +132,35 @@ app.post("/api/register", async (req, res) => {
 
 /* ================= LOGIN ================= */
 app.post("/api/login", async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
+    const user = await User.findOne({ email });
 
-  if (!user) return res.status(400).json({ message: "User not found ❌" });
-
-  const match = await bcrypt.compare(password, user.password);
-
-  if (!match) return res.status(400).json({ message: "Invalid password ❌" });
-
-  res.json({
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      coins: user.coins
+    if (!user) {
+      return res.status(400).json({ message: "User not found ❌" });
     }
-  });
+
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      return res.status(400).json({ message: "Invalid password ❌" });
+    }
+
+    res.json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        coins: user.coins
+      }
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Login error ❌" });
+  }
 });
 
 /* ================= ORDER + EMAIL ================= */
@@ -173,37 +174,22 @@ app.post("/api/order", async (req, res) => {
       return res.status(404).json({ message: "User not found ❌" });
     }
 
-    // 🔥 COINS LOGIC
-    const coinsEarned = Math.floor(amount * 0.05); // 5%
-    const updatedCoins = user.coins - coinsUsed + coinsEarned;
+    // ✅ 1₹ = 1 COIN
+    const coinsEarned = Math.floor(amount);
+
+    // ✅ SAFE CALCULATION
+    const updatedCoins = Math.max(0, user.coins - coinsUsed + coinsEarned);
 
     user.coins = updatedCoins;
     await user.save();
 
-    // 📧 SEND EMAIL
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: "Order Confirmation - Adbliss",
-      html: `
-        <div style="font-family: Arial; padding:20px;">
-          <h2 style="color:#2F80ED;">Order Confirmed 🎉</h2>
-
-          <p>Hi ${user.name},</p>
-
-          <p>Your order has been placed successfully.</p>
-
-          <div style="background:#f5f5f5; padding:15px; border-radius:10px;">
-            <p><b>Amount:</b> ₹${amount}</p>
-            <p><b>Coins Earned:</b> ${coinsEarned}</p>
-            <p><b>Coins Used:</b> ${coinsUsed}</p>
-          </div>
-
-          <p><b>Total Coins:</b> ${updatedCoins}</p>
-
-          <p style="margin-top:20px;">Thank you for shopping with us ❤️</p>
-        </div>
-      `
+    // ✅ SEND PROFESSIONAL EMAIL
+    await sendOrderEmail(user.email, {
+      name: user.name,
+      amount,
+      coinsEarned,
+      coinsUsed,
+      totalCoins: updatedCoins
     });
 
     res.json({
