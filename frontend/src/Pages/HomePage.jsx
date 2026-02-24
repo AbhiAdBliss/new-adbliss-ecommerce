@@ -31,7 +31,7 @@ const ads = [
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const handleClick = () => navigate("/register");
+  const handleClick = () => navigate("/apple");
 
   return (
     <>
@@ -422,7 +422,7 @@ const HomePage = () => {
 
     py: 6,
     textAlign: "center",
-background: "linear-gradient(90deg, #776248ff, #6f5b39ff, #7c6747ff)",
+background: "linear-gradient(90deg, #767476ff, #757276ff, #a3a1a3ff)",
     color: "#fff"
   }}
 >
@@ -438,7 +438,7 @@ background: "linear-gradient(90deg, #776248ff, #6f5b39ff, #7c6747ff)",
     variant="contained"
     onClick={() => navigate("/register")}
     sx={{
-      background: "#c0974b",
+      background: "#878bfcff",
       color: "#fff",
       px: 4,
       py: 1.2,
@@ -446,12 +446,12 @@ background: "linear-gradient(90deg, #776248ff, #6f5b39ff, #7c6747ff)",
       textTransform: "none",
       fontWeight: "bold",
       fontSize: "16px",
-      boxShadow: "0 8px 20px rgba(192,151,75,0.4)",
+      boxShadow: "0 8px 20px rgba(28, 46, 239, 0.4)",
       transition: "all 0.3s ease",
       "&:hover": {
-        background: "#a97f38",
+        background: "#607cf9ff",
         transform: "translateY(-3px)",
-        boxShadow: "0 12px 25px rgba(192,151,75,0.6)"
+        
       }
     }}
   >

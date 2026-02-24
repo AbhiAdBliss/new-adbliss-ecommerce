@@ -306,7 +306,7 @@ export default function SpaceLogin() {
 
             <Typography variant="body2">
               Don’t have an account?{" "}
-              <MuiLink href="#" sx={{ fontWeight: 600 }}>
+              <MuiLink href="/register" sx={{ fontWeight: 600 }}>
                 Sign Up
               </MuiLink>
             </Typography>

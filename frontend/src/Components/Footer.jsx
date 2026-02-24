@@ -82,13 +82,13 @@ const Footer = () => {
               <Button
                 variant="contained"
                 sx={{
-                  bgcolor: "#c0974b",
+                  bgcolor: "#7476f7ff",
                   color: "#fff",
                   textTransform: "none",
                   fontWeight: 600,
                   px: 3,
                   width: { xs: "100%", sm: "auto" },
-                  "&:hover": { bgcolor: "#a87f3b" }
+                  "&:hover": { bgcolor: "#4749bfff" }
                 }}
               >
                 Subscribe

@@ -22,7 +22,7 @@ const CategoriesSection = () => {
   const navigate = useNavigate(); 
 
   const handleClick = () => {
-    navigate("/register"); 
+    navigate("/apple"); 
   };
 
   return (
