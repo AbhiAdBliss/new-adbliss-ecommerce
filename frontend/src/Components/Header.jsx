@@ -17,8 +17,6 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../context/useCart";
 import CartDrawer from "../Components/CartDrawer";
-
-// ✅ IMPORT VIDEO
 import coinVideo from "../assets/Home-images/Coins.mp4";
 
 const Header = () => {
@@ -35,17 +33,14 @@ const Header = () => {
   const isHomePage = location.pathname === "/";
   const isApplePage = location.pathname === "/apple";
 
-  // 🔥 HIDE HEADER ON LOGIN & REGISTER
+  // 🔥 HIDE HEADER
   const hideHeader =
     location.pathname === "/login" ||
     location.pathname === "/register";
 
   // ✅ SCROLL EFFECT
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -62,7 +57,6 @@ const Header = () => {
     };
 
     updateUser();
-
     window.addEventListener("userUpdated", updateUser);
     window.addEventListener("storage", updateUser);
 
@@ -72,9 +66,10 @@ const Header = () => {
     };
   }, []);
 
-  // ✅ LOGOUT
+  // ✅ LOGOUT FIXED
   const handleLogout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("token"); // 🔥 IMPORTANT FIX
     window.dispatchEvent(new Event("userUpdated"));
     setAnchorEl(null);
     navigate("/");
@@ -82,7 +77,6 @@ const Header = () => {
 
   const shouldBeTransparent = (isHomePage || isApplePage) && !scrolled;
 
-  // 🔥 RETURN NULL (HIDE HEADER COMPLETELY)
   if (hideHeader) return null;
 
   return (
@@ -126,7 +120,7 @@ const Header = () => {
               </Badge>
             </IconButton>
 
-            {/* USER */}
+            {/* USER SECTION */}
             {user && !isHomePage ? (
               <>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -143,7 +137,7 @@ const Header = () => {
                     {user.name}
                   </Typography>
 
-                  {/* 🪙 COINS */}
+                  {/* COINS */}
                   <Chip
                     label={user.coins || 0}
                     avatar={
@@ -167,7 +161,6 @@ const Header = () => {
                       bgcolor: "#fff8dc",
                       color: "#000",
                       fontWeight: "bold",
-                      px: 1
                     }}
                   />
                 </Box>
@@ -196,7 +189,15 @@ const Header = () => {
               </>
             ) : !user ? (
               <>
-                <Button component={Link} to="/login" sx={{ color: "#fff" }}>
+                {/* 🔥 LOGIN WITH REDIRECT */}
+                <Button
+                  onClick={() =>
+                    navigate("/login", {
+                      state: { from: location.pathname }
+                    })
+                  }
+                  sx={{ color: "#fff" }}
+                >
                   Login
                 </Button>
 

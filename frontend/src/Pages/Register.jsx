@@ -16,6 +16,9 @@ import {
 import { Visibility, VisibilityOff, Refresh } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
 
+// ✅ GOOGLE IMPORT
+import { GoogleLogin } from "@react-oauth/google";
+
 export default function Register() {
   const navigate = useNavigate();
 
@@ -36,15 +39,6 @@ export default function Register() {
   const [timer, setTimer] = useState(0);
   const inputRefs = useRef([]);
 
-  // CAPTCHA
-  const generateCaptchaCode = () => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    return Array.from({ length: 5 }, () =>
-      chars[Math.floor(Math.random() * chars.length)]
-    ).join("");
-  };
-  const [captcha, setCaptcha] = useState(generateCaptchaCode());
-
   const [values, setValues] = useState({
     name: "",
     email: "",
@@ -54,13 +48,32 @@ export default function Register() {
     captchaInput: "",
   });
 
-  // ✅ ERRORS USED PROPERLY
   const [errors, setErrors] = useState({});
   const [serverMessage, setServerMessage] = useState("");
   const [serverError, setServerError] = useState("");
 
   const handleChange = (field) => (e) => {
     setValues({ ...values, [field]: e.target.value });
+  };
+
+  // 🔥 GOOGLE SUCCESS HANDLER
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await axios.post(
+        "http://13.233.120.37:5000/api/google-register",
+        {
+          credential: credentialResponse.credential,
+        }
+      );
+
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      setServerMessage("Google Signup Successful 🎉");
+
+      setTimeout(() => navigate("/apple"), 1000);
+    } catch (error) {
+  console.error(error); 
+  setServerError("Google signup failed");
+}
   };
 
   // PASSWORD STRENGTH
@@ -91,8 +104,6 @@ export default function Register() {
       values.password === values.confirmPassword
         ? ""
         : "Passwords do not match";
-    temp.captchaInput =
-      values.captchaInput === captcha ? "" : "Captcha does not match";
 
     setErrors(temp);
     return Object.values(temp).every((x) => x === "");
@@ -204,7 +215,7 @@ export default function Register() {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", pt: 2, background: "#121212" }}>
+    <Box sx={{ height: "100vh", pt: 2, background: "#2f2f2fff" }}>
       <Container maxWidth="sm">
         <Paper sx={{ p: 3, borderRadius: 4 }}>
           <Typography variant="h4" textAlign="center">
@@ -215,6 +226,18 @@ export default function Register() {
           {serverError && <Alert severity="error">{serverError}</Alert>}
 
           <Box component="form" onSubmit={handleSubmit}>
+            
+            {/* 🔥 GOOGLE BUTTON */}
+            <Box sx={{ mt: 2, textAlign: "center" }}>
+            <GoogleLogin
+  onSuccess={handleGoogleSuccess}
+  onError={() => setServerError("Google login failed")}
+  theme="outline"        
+  size="large"          
+shape="circle"        
+  text="signin_with"     
+/>
+            </Box>
 
             <TextField fullWidth label="Name" margin="normal"
               value={values.name}
@@ -288,85 +311,60 @@ export default function Register() {
                 <Typography sx={{ fontSize: 12, color: strength.color }}>
                   Strength: {strength.label}
                 </Typography>
-                <LinearProgress
-                  variant="determinate"
-                  value={strength.value}
-                  sx={{ mt: 1 }}
-                />
+                <LinearProgress variant="determinate" value={strength.value} sx={{ mt: 1 }} />
               </>
             )}
 
-         <TextField
-  fullWidth
-  label="Confirm Password"
-  type={showConfirmPassword ? "text" : "password"}
-  margin="normal"
-  value={values.confirmPassword}
-  onChange={handleChange("confirmPassword")}
-  error={!!errors.confirmPassword}
-  helperText={errors.confirmPassword}
-  InputProps={{
-    endAdornment: (
-      <InputAdornment position="end">
-        <IconButton
-          onClick={() =>
-            setShowConfirmPassword(!showConfirmPassword)
-          }
-        >
-          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-        </IconButton>
-      </InputAdornment>
-    ),
-  }}
-/>
-
-
-            <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-              <Typography sx={{ bgcolor: "#eee", px: 2, py: 1 }}>
-                {captcha}
-              </Typography>
-              <IconButton onClick={() => setCaptcha(generateCaptchaCode())}>
-                <Refresh />
-              </IconButton>
-            </Box>
-
-            <TextField fullWidth label="Enter Captcha" margin="normal"
-              value={values.captchaInput}
-              onChange={handleChange("captchaInput")}
-              error={!!errors.captchaInput}
-              helperText={errors.captchaInput}
+            <TextField
+              fullWidth
+              label="Confirm Password"
+              type={showConfirmPassword ? "text" : "password"}
+              margin="normal"
+              value={values.confirmPassword}
+              onChange={handleChange("confirmPassword")}
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                    >
+                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
 
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-  <Button
-    type="submit"
-    variant="contained"
-    disabled={!otpVerified}
-    sx={{
-      bgcolor: "black",   
-      fontWeight: "bold",
-      px: 6,
-      py: 1.2,
-      "&:hover": {
-        bgcolor: "#9B6DFF", 
-      },
-      "&.Mui-disabled": {
-        bgcolor: "#d4d4d4ff",  
-        color: "#aaa"
-      }
-    }}
-  >
-    Register
-  </Button>
-</Box>
-
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={!otpVerified}
+                sx={{
+                  bgcolor: "black",
+                  fontWeight: "bold",
+                  px: 6,
+                  py: 1.2,
+                  "&:hover": { bgcolor: "#9B6DFF" },
+                  "&.Mui-disabled": {
+                    bgcolor: "#d4d4d4ff",
+                    color: "#aaa"
+                  }
+                }}
+              >
+                Register
+              </Button>
+            </Box>
 
           </Box>
 
           <Typography mt={2} textAlign="center">
             Already have an account? <Link to="/login">Login</Link>
           </Typography>
-
         </Paper>
       </Container>
     </Box>
