@@ -12,9 +12,9 @@ const sendOrderEmail = async (userEmail, orderData) => {
   });
 
   const mailOptions = {
-    from: `Adbliss <${process.env.EMAIL_USER}>`,
+    from: `Shopnbliss <${process.env.EMAIL_USER}>`,
     to: userEmail,
-    subject: "Order Confirmation - Adbliss",
+    subject: "Order Confirmation - Shopnbliss",
     html: `
       <div style="font-family: Arial; padding:20px;">
         <h2 style="color:#2F80ED;">Order Confirmed 🎉</h2>

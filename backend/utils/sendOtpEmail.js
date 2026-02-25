@@ -12,15 +12,15 @@ const sendOtpEmail = async (email, otp) => {
   });
 
   const mailOptions = {
-    from: `Adbliss <${process.env.EMAIL_USER}>`,
+    from: `Shopnbliss <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: "Your OTP - Adbliss",
+    subject: "Your OTP - Shopnbliss",
     html: `
       <div style="font-family: Arial, sans-serif; padding: 20px; background: #f5f7fb;">
         
         <div style="max-width: 500px; margin: auto; background: white; border-radius: 12px; padding: 25px; text-align: center;">
           
-          <h2 style="color: #2F80ED;">Adbliss</h2>
+          <h2 style="color: #2F80ED;">Shopnbliss</h2>
           
           <h3>Password Reset OTP</h3>
 
