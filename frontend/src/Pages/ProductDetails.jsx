@@ -16,6 +16,8 @@ import StarIcon from "@mui/icons-material/Star";
 import { useCart } from "../context/useCart";
 import Footer from "../Components/Footer";
 import Register from "../Pages/Register";
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import GoldCoin from "../assets/AppleS-imgs/coin-img.png"; 
 
 import Apple1 from "../assets/AppleS-imgs/Apple1.png";
 import Apple2 from "../assets/AppleS-imgs/Apple2.png";
@@ -26,7 +28,7 @@ import Apple6 from "../assets/AppleS-imgs/Apple6.png";
 import Apple7 from "../assets/AppleS-imgs/Apple7.png";
 import Apple8 from "../assets/AppleS-imgs/Apple8.png";
 import Apple9 from "../assets/AppleS-imgs/Apple9.png";
-import SpaceLogin from "./Login";
+
 
 
 const products = [
@@ -202,24 +204,47 @@ export default function ProductDetails() {
   }}
 >
   {/* 🔥 COIN STICKER */}
+<Box
+  sx={{
+    position: "absolute",
+    top: 15,
+    left: -35,
+    transform: "rotate(-45deg)",
+    bgcolor: "#f7e895ff", 
+    color: "#000",
+    pl: 3, 
+    pr: 2,
+    py: 0.4,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-start", 
+    gap: 0.5, 
+    zIndex: 2,
+    boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+    width: "140px", 
+  }}
+>
   <Box
+    component="img"
+    src={GoldCoin}
+    alt="coin"
     sx={{
-      position: "absolute",
-      top: 12,
-      left: -30,
-      transform: "rotate(-45deg)",
-      bgcolor: "#FFD700",
-      color: "#000",
-      px: 4,
-      py: 1,
-      fontSize: "10px",
+      width: 14,
+      height: 14,
+      objectFit: "contain",
+    }}
+  />
+
+  <Typography 
+    sx={{ 
+      fontSize: "10px", 
       fontWeight: "bold",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-      zIndex: 2
+      whiteSpace: "nowrap" 
     }}
   >
-    Coin Product
-  </Box>
+    COIN PRODUCT
+  </Typography>
+</Box>
 
   {/* PRODUCT IMAGE */}
   <Box
