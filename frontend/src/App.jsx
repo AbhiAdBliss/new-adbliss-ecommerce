@@ -16,6 +16,7 @@ import OrderSuccess from "./Pages/OrderSuccess";
 
 import Profile from "./Pages/Profile";
 import ProtectedRoute from "./Components/ProtectedRoute";
+import SpaceLogin from "./Pages/Login";
 
 const Home = () => (
   <>
@@ -54,7 +55,7 @@ function AppContent() {
         <Route path="/" element={<Home />} />
 
         {/* ✅ LOGIN FIX */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<SpaceLogin/>} />
 
         <Route path="/register" element={<Register />} />
         <Route path="/deal-promo/:id" element={<DealPromo />} />

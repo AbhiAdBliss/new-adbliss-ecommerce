@@ -15,10 +15,6 @@ import {
   Divider,
   Alert,
   CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Paper
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -40,25 +36,18 @@ export default function SpaceLogin() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  /* ================= FORGOT ================= */
-  const [open, setOpen] = useState(false);
-  const [otpStep, setOtpStep] = useState(1);
-  const [forgotData, setForgotData] = useState({
-    email: "",
-    otp: "",
-    newPassword: "",
-  });
-
-  const [forgotLoading, setForgotLoading] = useState(false);
-  const [forgotMsg, setForgotMsg] = useState("");
-  const [forgotError, setForgotError] = useState("");
-
-  /* ================= AUTO LOGIN (FIXED) ================= */
+  /* ================= AUTO LOGIN FIX ================= */
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
 
-    // ✅ redirect properly
-    if (token) {
+    if (
+      token &&
+      user &&
+      token !== "undefined" &&
+      token !== "null" &&
+      user !== "undefined"
+    ) {
       navigate("/apple", { replace: true });
     }
   }, [navigate]);
@@ -96,16 +85,18 @@ export default function SpaceLogin() {
       localStorage.setItem("token", res.data.token);
 
       window.dispatchEvent(new Event("userUpdated"));
+
       navigate("/apple");
 
     } catch (err) {
+      console.error("LOGIN ERROR:", err);
       setApiError(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
-  /* ================= GOOGLE ================= */
+  /* ================= GOOGLE LOGIN ================= */
   const handleGoogleLogin = async (credentialResponse) => {
     try {
       const res = await axios.post(
@@ -117,67 +108,9 @@ export default function SpaceLogin() {
       localStorage.setItem("token", res.data.token);
 
       navigate("/apple");
-    } catch {
+    } catch (error) {
+      console.error(error);
       setApiError("Google login failed ❌");
-    }
-  };
-
-  /* ================= OTP ================= */
-  const sendOtp = async () => {
-    try {
-      setForgotLoading(true);
-      setForgotError("");
-      setForgotMsg("");
-
-      await axios.post("http://13.233.120.37:5000/api/send-otp", {
-        email: forgotData.email,
-      });
-
-      setOtpStep(2);
-      setForgotMsg("OTP sent successfully ✅");
-    } catch {
-      setForgotError("Failed to send OTP ❌");
-    } finally {
-      setForgotLoading(false);
-    }
-  };
-
-  const verifyOtp = async () => {
-    try {
-      setForgotLoading(true);
-      await axios.post("http://13.233.120.37:5000/api/verify-otp", {
-        email: forgotData.email,
-        otp: forgotData.otp,
-      });
-
-      setOtpStep(3);
-      setForgotMsg("OTP verified ✅");
-    } catch {
-      setForgotError("Invalid OTP ❌");
-    } finally {
-      setForgotLoading(false);
-    }
-  };
-
-  const resetPassword = async () => {
-    try {
-      setForgotLoading(true);
-
-      await axios.post("http://13.233.120.37:5000/api/reset-password", {
-        email: forgotData.email,
-        newPassword: forgotData.newPassword,
-      });
-
-      setForgotMsg("Password updated 🎉");
-
-      setTimeout(() => {
-        setOpen(false);
-        setOtpStep(1);
-      }, 1500);
-    } catch {
-      setForgotError("Reset failed ❌");
-    } finally {
-      setForgotLoading(false);
     }
   };
 
@@ -250,8 +183,8 @@ export default function SpaceLogin() {
               label="Remember me"
             />
 
-            <MuiLink component="button" onClick={() => setOpen(true)}>
-              Forgot password?
+            <MuiLink component="button" onClick={() => navigate("/register")}>
+              Sign Up
             </MuiLink>
           </Stack>
 
@@ -270,13 +203,6 @@ export default function SpaceLogin() {
             {loading ? <CircularProgress size={24} /> : "SIGN IN"}
           </Button>
 
-          <Typography variant="body2">
-            Don’t have an account?{" "}
-            <MuiLink component="button" onClick={() => navigate("/register")}>
-              Sign Up
-            </MuiLink>
-          </Typography>
-
           <Divider>or</Divider>
 
           <Box display="flex" justifyContent="center">
@@ -288,70 +214,6 @@ export default function SpaceLogin() {
 
         </Stack>
       </Paper>
-
-      {/* MODAL (UNCHANGED) */}
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>Reset Password</DialogTitle>
-
-        <DialogContent>
-          <Stack spacing={2} mt={1}>
-            {forgotMsg && <Alert severity="success">{forgotMsg}</Alert>}
-            {forgotError && <Alert severity="error">{forgotError}</Alert>}
-
-            {otpStep === 1 && (
-              <>
-                <TextField
-                  label="Email"
-                  fullWidth
-                  value={forgotData.email}
-                  onChange={(e) =>
-                    setForgotData({ ...forgotData, email: e.target.value })
-                  }
-                />
-                <Button onClick={sendOtp}>
-                  {forgotLoading ? <CircularProgress size={20} /> : "Send OTP"}
-                </Button>
-              </>
-            )}
-
-            {otpStep === 2 && (
-              <>
-                <TextField
-                  label="OTP"
-                  fullWidth
-                  value={forgotData.otp}
-                  onChange={(e) =>
-                    setForgotData({ ...forgotData, otp: e.target.value })
-                  }
-                />
-                <Button onClick={verifyOtp}>Verify OTP</Button>
-              </>
-            )}
-
-            {otpStep === 3 && (
-              <>
-                <TextField
-                  label="New Password"
-                  type="password"
-                  fullWidth
-                  value={forgotData.newPassword}
-                  onChange={(e) =>
-                    setForgotData({
-                      ...forgotData,
-                      newPassword: e.target.value,
-                    })
-                  }
-                />
-                <Button onClick={resetPassword}>Reset Password</Button>
-              </>
-            )}
-          </Stack>
-        </DialogContent>
-
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }

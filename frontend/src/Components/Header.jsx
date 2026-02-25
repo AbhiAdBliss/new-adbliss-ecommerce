@@ -18,6 +18,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../context/useCart";
 import CartDrawer from "../Components/CartDrawer";
 import coinVideo from "../assets/Home-images/Coins.mp4";
+import logo from "../assets/shopnbliss-logo.png";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -88,24 +89,27 @@ const Header = () => {
           bgcolor: shouldBeTransparent ? "transparent" : "#121212",
           transition: "all 0.3s ease",
           backdropFilter: shouldBeTransparent ? "none" : "blur(6px)",
-          height: 75
+          height: 80
         }}
       >
         <Toolbar sx={{ justifyContent: "space-between", height: "100%" }}>
 
           {/* LOGO */}
           <Typography
-            component={Link}
-            to={user ? "/apple" : "/"}
-            sx={{
-              color: "#fff",
-              textDecoration: "none",
-              fontWeight: "bold",
-              fontSize: "20px"
-            }}
-          >
-            Adbliss Ecommerce
-          </Typography>
+  component={Link}
+  to={user ? "/apple" : "/"}
+  sx={{ display: "flex", alignItems: "center" }}
+>
+  <Box
+    component="img"
+    src={logo}
+    alt="Shopnbliss"
+    sx={{
+      height: 90,
+      pt:0.5
+    }}
+  />
+</Typography>
 
           {/* RIGHT SIDE */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>

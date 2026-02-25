@@ -215,7 +215,7 @@ export default function Register() {
   };
 
   return (
-    <Box sx={{ height: "100vh", pt: 2, background: "#2f2f2fff" }}>
+    <Box sx={{ height: "auto", pt: 2, background: "#2f2f2fff",pb:10 }}>
       <Container maxWidth="sm">
         <Paper sx={{ p: 3, borderRadius: 4 }}>
           <Typography variant="h4" textAlign="center">

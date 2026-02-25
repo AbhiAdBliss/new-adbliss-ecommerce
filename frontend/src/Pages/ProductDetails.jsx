@@ -186,7 +186,7 @@ export default function ProductDetails() {
 
   return (
     <Box>
-      <Box sx={{ mt: 12, px: { xs: 2, md: 6 }, py: 4, bgcolor: "white" }}>
+      <Box sx={{ mt: 12, px: { xs: 2, md: 6 }, py: 4, bgcolor: "white", }}>
         <Grid
           container
           spacing={{ xs: 4, md: 5 }}
@@ -302,7 +302,7 @@ export default function ProductDetails() {
           </Grid>
 
           {/* RIGHT SIDE */}
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={8} >
             <Grid
               container
               spacing={6}
