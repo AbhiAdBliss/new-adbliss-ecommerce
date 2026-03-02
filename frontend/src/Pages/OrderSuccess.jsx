@@ -1,47 +1,9 @@
-import React, { useEffect } from "react";
-import axios from "axios";
+import React from "react";
 import { Box, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 export default function OrderSuccess() {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const creditCoins = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        const amount = Number(localStorage.getItem("orderAmount"));
-
-        if (!user || !amount) return;
-
-        const res = await axios.post(
-          "http://13.233.120.37:5000/api/order",
-          {
-            userId: user.id,
-            amount: amount,
-          }
-        );
-
-        // ✅ UPDATE USER
-        const updatedUser = {
-          ...user,
-          coins: res.data.coins,
-        };
-
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-
-        // 🔥 REFRESH HEADER
-        window.dispatchEvent(new Event("userUpdated"));
-
-        // cleanup
-        localStorage.removeItem("orderAmount");
-      } catch (err) {
-        console.log("Coin update error", err);
-      }
-    };
-
-    creditCoins();
-  }, []);
 
   return (
     <Box
@@ -81,7 +43,7 @@ export default function OrderSuccess() {
 
         {/* ✅ Subtitle */}
         <Typography sx={{ mt: 2, fontSize: "16px", color: "#ccc" }}>
-          Coins credited to your account 💰
+          Your order has been placed successfully 💰
         </Typography>
 
         {/* ✅ Button */}

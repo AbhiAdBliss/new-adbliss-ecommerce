@@ -50,20 +50,26 @@ export default function Checkout() {
     country: "India",
   });
 
-  const handleChange = (field) => (e) =>
-    setForm({ ...form, [field]: e.target.value });
+  // ✅ FIXED handleChange (USED NOW)
+  const handleChange = (field) => (e) => {
+    setForm((prev) => ({
+      ...prev,
+      [field]: e.target.value,
+    }));
+  };
 
-  /* ================= AUTO REDIRECT IF CART EMPTY ================= */
+  /* ================= AUTO REDIRECT ================= */
   useEffect(() => {
     if (cartItems.length === 0) {
       navigate("/apple");
     }
-  }, [cartItems]);
+  }, [cartItems, navigate]);
 
   /* ================= CALCULATIONS ================= */
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + Number(item.price.replace(/,/g, "")) * item.quantity,
-    0,
+    (sum, item) =>
+      sum + Number(item.price.replace(/,/g, "")) * item.quantity,
+    0
   );
 
   const baseTotal = subtotal - discount + Protectfee;
@@ -95,14 +101,9 @@ export default function Checkout() {
 
     const user = JSON.parse(localStorage.getItem("user"));
 
-    // 🚨 LOGIN CHECK
     if (!user) {
       setAuthError("⚠️ Please login or register to continue");
-
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
-
+      setTimeout(() => navigate("/login"), 1500);
       return;
     }
 
@@ -110,7 +111,6 @@ export default function Checkout() {
     setPaymentError(null);
     setAuthError("");
 
-    // ✅ VALIDATION
     if (
       !form.name ||
       !form.phone ||
@@ -139,23 +139,9 @@ export default function Checkout() {
       name: "ShopnBliss",
       description: "Order Payment",
 
-      notes: {
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        address1: form.address1,
-        address2: form.address2,
-        city: form.city,
-        state: form.state,
-        pincode: form.pincode,
-        country: form.country,
-      },
-
       handler: async function () {
         try {
-          const user = JSON.parse(localStorage.getItem("user"));
-
-          const res = await fetch("https://shopnbliss.com/api/order", {
+          const res = await fetch("/api/order", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -170,6 +156,8 @@ export default function Checkout() {
 
           const data = await res.json();
 
+          if (!res.ok) throw new Error(data.message || "Order failed");
+
           const updatedUser = {
             ...user,
             coins: data.coins,
@@ -179,7 +167,10 @@ export default function Checkout() {
           window.dispatchEvent(new Event("userUpdated"));
 
           clearCart();
+
+          // ✅ SUCCESS PAGE NAVIGATION
           navigate("/order-success");
+
         } catch (err) {
           setPaymentError(err.message);
         } finally {
@@ -200,241 +191,84 @@ export default function Checkout() {
   };
 
   return (
-    <Box
-      sx={{
-        pt: 15,
-        px: { xs: 2, md: 6 },
-        bgcolor: "#f5f5f5",
-        pb: 5,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <Box sx={{ pt: 15, px: { xs: 2, md: 6 }, bgcolor: "#f5f5f5", pb: 5 }}>
       <Typography variant="h4" mb={4}>
         Checkout
       </Typography>
 
       <form onSubmit={handleOrder}>
         <Grid container spacing={10}>
+
           {/* LEFT */}
           <Grid item xs={12} md={8}>
-            <Paper sx={{ p: { xs: 2, md: 4 } }}>
-              {/* LOGIN ALERT */}
-              {authError && (
-                <Alert severity="warning" sx={{ mb: 2 }}>
-                  {authError}
-                </Alert>
-              )}
+            <Paper sx={{ p: 4 }}>
 
-              {/* PRODUCTS */}
+              {authError && <Alert severity="warning">{authError}</Alert>}
+
               {cartItems.map((item, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    display: "flex",
-                    flexDirection: { xs: "column", sm: "row" },
-                    gap: 2,
-                    mb: 2,
-                    p: 2,
-                    borderRadius: 2,
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                    alignItems: "center",
-                  }}
-                >
-                  <Avatar src={item.image} sx={{ width: 220, height: 220 }} />
-
-                  <Box sx={{ flex: 1 }}>
-                    <Typography fontWeight={600}>{item.name}</Typography>
+                <Box key={index} sx={{ display: "flex", gap: 2, mb: 2 }}>
+                  <Avatar src={item.image} sx={{ width: 120, height: 120 }} />
+                  <Box>
+                    <Typography>{item.name}</Typography>
                     <Typography>Qty: {item.quantity}</Typography>
-
-                    {/* 🔥 REMOVE BUTTON */}
-                    <Button
-                      size="small"
-                      sx={{
-                        mt: 1,
-                        color: "#ff4d4f",
-                        textTransform: "none",
-                        fontWeight: "bold",
-                        "&:hover": {
-                          bgcolor: "rgba(255,77,79,0.1)",
-                        },
-                      }}
-                      onClick={() => removeFromCart(item.id)}
-                    >
+                    <Button onClick={() => removeFromCart(item.id)}>
                       Remove
                     </Button>
                   </Box>
-
-                  <Typography fontWeight={600}>₹{item.price}</Typography>
+                  <Typography>₹{item.price}</Typography>
                 </Box>
               ))}
 
               <Divider sx={{ my: 3 }} />
 
-              {/* SHIPPING */}
-              <Typography
-                fontWeight={600}
-                fontSize={22}
-                mb={2}
-                textAlign={"center"}
-              >
+              <Typography textAlign="center" fontSize={20}>
                 Shipping Details
               </Typography>
 
-              <Box display="flex" justifyContent="center">
-                <Grid
-                  container
-                  spacing={4}
-                  sx={{
-                    maxWidth: 800,
-                    width: "100%",
-                    textAlign: "center",
-                  }}
-                >
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Full Name"
-                      value={form.name}
-                      onChange={handleChange("name")}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Phone"
-                      value={form.phone}
-                      onChange={handleChange("phone")}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Email"
-                      value={form.email}
-                      onChange={handleChange("email")}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Address Line 1"
-                      value={form.address1}
-                      onChange={handleChange("address1")}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Address Line 2"
-                      value={form.address2}
-                      onChange={handleChange("address2")}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="City"
-                      value={form.city}
-                      onChange={handleChange("city")}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="State"
-                      value={form.state}
-                      onChange={handleChange("state")}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Pincode"
-                      value={form.pincode}
-                      onChange={handleChange("pincode")}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Country"
-                      value={form.country}
-                      onChange={handleChange("country")}
-                    />
-                  </Grid>
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <TextField fullWidth label="Name" value={form.name} onChange={handleChange("name")} />
                 </Grid>
-              </Box>
+
+                <Grid item xs={6}>
+                  <TextField fullWidth label="Phone" value={form.phone} onChange={handleChange("phone")} />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField fullWidth label="Email" value={form.email} onChange={handleChange("email")} />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField fullWidth label="Address" value={form.address1} onChange={handleChange("address1")} />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField fullWidth label="City" value={form.city} onChange={handleChange("city")} />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField fullWidth label="State" value={form.state} onChange={handleChange("state")} />
+                </Grid>
+              </Grid>
 
               <Divider sx={{ my: 2 }} />
 
-              {/* COUPON */}
-              <TextField
-                fullWidth
-                label="Coupon Code"
-                value={coupon}
-                onChange={(e) => setCoupon(e.target.value)}
-                sx={{ width: 200 }}
-              />
+              <TextField value={coupon} onChange={(e) => setCoupon(e.target.value)} />
+              <Button onClick={applyCoupon}>Apply</Button>
 
-              <Button onClick={applyCoupon} sx={{ mt: 1 }}>
-                Apply Coupon
-              </Button>
-
-              {couponMsg && (
-                <Alert severity={couponMsg.type} sx={{ mt: 2 }}>
-                  {couponMsg.text}
-                </Alert>
-              )}
-
+              {couponMsg && <Alert severity={couponMsg.type}>{couponMsg.text}</Alert>}
               {paymentError && <Alert severity="error">{paymentError}</Alert>}
             </Paper>
           </Grid>
 
           {/* RIGHT */}
-          <Grid item xs={12} md={4} width={350}>
-            <Paper sx={{ p: 3, position: "sticky", top: 100 }}>
-              <Typography fontWeight={600} fontSize={22}>
-                Price Details
-              </Typography>
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 3 }}>
 
-              <Box display="flex" justifyContent="space-between">
-                <Typography>Subtotal</Typography>
-                <Typography>₹{subtotal}</Typography>
-              </Box>
+              <Typography>Subtotal: ₹{subtotal}</Typography>
+              <Typography>Fee: ₹{Protectfee}</Typography>
 
-              <Box display="flex" justifyContent="space-between">
-                <Typography>Protect Fee</Typography>
-                <Typography>₹{Protectfee}</Typography>
-              </Box>
-
-              {discount > 0 && (
-                <Box display="flex" justifyContent="space-between">
-                  <Typography color="green">Discount</Typography>
-                  <Typography color="green">-₹{discount}</Typography>
-                </Box>
-              )}
-
-              <Divider sx={{ my: 2 }} />
-
-              <Typography>Coins: {coinsAvailable}</Typography>
-
+              {/* ✅ FIXED setUseCoins */}
               <FormControlLabel
                 control={
                   <Checkbox
@@ -447,27 +281,14 @@ export default function Checkout() {
 
               {useCoins && <Typography color="green">-₹{coinsUsed}</Typography>}
 
-              <Divider sx={{ my: 2 }} />
+              <Typography>Total: ₹{total}</Typography>
 
-              <Typography fontWeight="bold">Total: ₹{total}</Typography>
-
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, bgcolor: "#2F80ED" }}
-                disabled={loading || !savedUser}
-              >
-                {!savedUser ? (
-                  "Login to Continue"
-                ) : loading ? (
-                  <CircularProgress size={24} />
-                ) : (
-                  "Pay Now"
-                )}
+              <Button type="submit" fullWidth variant="contained">
+                {loading ? <CircularProgress size={20} /> : "Pay Now"}
               </Button>
             </Paper>
           </Grid>
+
         </Grid>
       </form>
     </Box>
