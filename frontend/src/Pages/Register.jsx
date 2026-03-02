@@ -34,104 +34,8 @@ export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
   /*
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-<<<<<<< HEAD
       const res = await axios.post("/api/google-register", {
         credential: credentialResponse.credential,
-=======
-      const res = await axios.post(
-        "/api/send-otp",
-        {
-          credential: credentialResponse.credential,
-        }
-      );
-
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      setServerMessage("Google Signup Successful 🎉");
-
-      setTimeout(() => navigate("/apple"), 1000);
-    } catch (error) {
-  console.error(error); 
-  setServerError("Google signup failed");
-}
-  };
-
-  // PASSWORD STRENGTH
-  const getPasswordStrength = (password) => {
-    if (password.length < 6)
-      return { label: "Weak", color: "red", value: 30 };
-    if (password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/))
-      return { label: "Strong", color: "green", value: 100 };
-    return { label: "Medium", color: "orange", value: 60 };
-  };
-
-  const strength = getPasswordStrength(values.password);
-
-  // VALIDATION
-  const validate = () => {
-    let temp = {};
-
-    temp.name = values.name ? "" : "Full Name is required";
-    temp.email = /\S+@\S+\.\S+/.test(values.email)
-      ? ""
-      : "Invalid Email";
-    temp.phone = /^[0-9]{10}$/.test(values.phone)
-      ? ""
-      : "Phone must be 10 digits";
-    temp.password =
-      values.password.length >= 6 ? "" : "Minimum 6 characters required";
-    temp.confirmPassword =
-      values.password === values.confirmPassword
-        ? ""
-        : "Passwords do not match";
-
-    setErrors(temp);
-    return Object.values(temp).every((x) => x === "");
-  };
-
-  // OTP INPUT
-  const handleOtpChange = (value, index) => {
-    if (!/^[0-9]?$/.test(value)) return;
-
-    const newOtp = [...otpArray];
-    newOtp[index] = value;
-    setOtpArray(newOtp);
-    setOtp(newOtp.join(""));
-
-    if (value && index < 5) {
-      inputRefs.current[index + 1].focus();
-    }
-  };
-
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !otpArray[index] && index > 0) {
-      inputRefs.current[index - 1].focus();
-    }
-  };
-
-  // TIMER
-  useEffect(() => {
-    if (timer > 0) {
-      const interval = setInterval(() => setTimer((t) => t - 1), 1000);
-      return () => clearInterval(interval);
-    }
-  }, [timer]);
-
-  // SEND OTP
-  const sendOtp = async () => {
-    setServerError("");
-    setServerMessage("");
-
-    if (!values.email) {
-      setServerError("Please enter your email id first");
-      return;
-    }
-
-    try {
-      setSendingOtp(true);
-
-      await axios.post("/api/send-otp", {
-        email: values.email,
->>>>>>> 6d221e8 (updated backend and frontend)
       });
 
       setServerMessage("Google Signup Successful 🎉");
@@ -145,7 +49,6 @@ export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
   };
   */
 
-<<<<<<< HEAD
   // ✅ VALIDATION
   const validate = () => {
     if (!values.name) return "Full Name is required";
@@ -154,23 +57,6 @@ export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
     if (values.password.length < 6)
       return "Password must be at least 6 characters";
     return "";
-=======
-  // VERIFY OTP
-  const verifyOtp = async () => {
-    try {
-      const res = await axios.post(
-        "/api/verify-otp",
-        { email: values.email, otp }
-      );
-
-      if (res.data.success) {
-        setOtpVerified(true);
-        setServerMessage("Email verified successfully");
-      }
-    } catch {
-      setServerError("Invalid OTP");
-    }
->>>>>>> 6d221e8 (updated backend and frontend)
   };
 
   // ❌ OTP FUNCTIONS COMMENTED
@@ -192,7 +78,6 @@ export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
     }
 
     try {
-<<<<<<< HEAD
       const res = await axios.post("/api/register", {
         name: values.name,
         email: values.email,
@@ -200,15 +85,6 @@ export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
         password: values.password,
         isVerified: true, // bypass OTP
       });
-=======
-     const res = await axios.post("/api/register", {
-  name: values.name,
-  email: values.email,
-  phone: values.phone,
-  password: values.password,
-  isVerified: true,
-});
->>>>>>> 6d221e8 (updated backend and frontend)
 
       setServerMessage("🎉 Registration Successful!");
 

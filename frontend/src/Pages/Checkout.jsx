@@ -136,7 +136,7 @@ export default function Checkout() {
       key: "rzp_test_SD84DQrFfdGAmn",
       amount: total * 100,
       currency: "INR",
-      name: "Adbliss Ecommerce",
+      name: "ShopnBliss",
       description: "Order Payment",
 
       notes: {
@@ -155,7 +155,7 @@ export default function Checkout() {
         try {
           const user = JSON.parse(localStorage.getItem("user"));
 
-          const res = await fetch("http://13.233.120.37:5000/api/order", {
+          const res = await fetch("https://shopnbliss.com/api/order", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

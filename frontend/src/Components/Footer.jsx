@@ -16,7 +16,7 @@ const Footer = () => {
           {/* BRAND */}
           <Grid item xs={12} md={4} textAlign={{ xs: "center", md: "left" }}>
             <Typography variant="h5" fontWeight="bold" gutterBottom>
-              Adbliss Ecommerce
+              ShopnBliss
             </Typography>
             <Typography variant="body2" sx={{ color: "#bbb", maxWidth: 300, mx: { xs: "auto", md: 0 } }}>
               Your one-stop shop for premium gadgets, accessories, and electronics
@@ -109,7 +109,7 @@ const Footer = () => {
             fontSize: { xs: "12px", md: "14px" }
           }}
         >
-          © {new Date().getFullYear()} Adbliss Ecommerce. All rights reserved.
+          © {new Date().getFullYear()} ShopnBliss. All rights reserved.
         </Box>
 
       </Container>
