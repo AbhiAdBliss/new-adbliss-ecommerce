@@ -29,14 +29,6 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
 
   const { cartItems } = useCart();
-  const [user, setUser] = useState(null);
-
-  const isHomePage = location.pathname === "/";
-  const isApplePage = location.pathname === "/apple";
-
-  const hideHeader =
-    location.pathname === "/login" ||
-    location.pathname === "/register";
 
   // ✅ SCROLL EFFECT
   useEffect(() => {
@@ -45,38 +37,35 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // ✅ USER LOAD + LIVE UPDATE (FIXED)
-  useEffect(() => {
-    const updateUser = () => {
-      try {
-        const storedUser = localStorage.getItem("user");
-        setUser(storedUser ? JSON.parse(storedUser) : null);
-      } catch {
-        setUser(null);
-      }
-    };
+  // ✅ DERIVED USER (NO useEffect, NO WARNING)
+  const userFromState = location.state?.user;
 
-    // Load initially
-    updateUser();
+  let user = null;
 
-    // Listen for updates
-    window.addEventListener("userUpdated", updateUser);
-    window.addEventListener("storage", updateUser);
+  if (userFromState) {
+    user = userFromState;
 
-    return () => {
-      window.removeEventListener("userUpdated", updateUser);
-      window.removeEventListener("storage", updateUser);
-    };
-  }, []);
+    // persist for refresh
+    localStorage.setItem("user", JSON.stringify(userFromState));
+  } else {
+    try {
+      const stored = localStorage.getItem("user");
+      user = stored ? JSON.parse(stored) : null;
+    } catch {
+      user = null;
+    }
+  }
+
+  const isHomePage = location.pathname === "/";
+  const isApplePage = location.pathname === "/apple";
+
+  const hideHeader =
+    location.pathname === "/login" ||
+    location.pathname === "/register";
 
   // ✅ LOGOUT
   const handleLogout = () => {
     localStorage.removeItem("user");
-    localStorage.removeItem("token");
-
-    // 🔥 Trigger update
-    window.dispatchEvent(new Event("userUpdated"));
-
     setAnchorEl(null);
     navigate("/");
   };

@@ -39,6 +39,10 @@ app.post("/api/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
 
+    if (!email) {
+      return res.status(400).json({ message: "Email required ❌" });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "User not found ❌" });
@@ -57,7 +61,7 @@ app.post("/api/forgot-password", async (req, res) => {
     res.json({ message: "OTP sent for password reset ✅" });
 
   } catch (err) {
-    console.error(err);
+    console.error("Forgot Password Error:", err);
     res.status(500).json({ message: "Failed to send OTP ❌" });
   }
 });
@@ -104,7 +108,7 @@ app.post("/api/reset-password", async (req, res) => {
     res.json({ message: "Password updated successfully 🎉" });
 
   } catch (err) {
-    console.error(err);
+    console.error("Reset Password Error:", err);
     res.status(500).json({ message: "Reset failed ❌" });
   }
 });
@@ -154,10 +158,15 @@ app.post("/api/register", async (req, res) => {
   try {
     const { name, email, phone, password } = req.body;
 
+    // 🔥 VALIDATION (ADDED)
+    if (!name || !email || !phone || !password) {
+      return res.status(400).json({ message: "All fields required ❌" });
+    }
+
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      return res.status(400).json({ message: "User exists ❌" });
+      return res.status(400).json({ message: "User already exists ❌" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -170,18 +179,20 @@ app.post("/api/register", async (req, res) => {
       coins: 0
     });
 
+    console.log("User Saved ✅", newUser.email); // 🔥 DEBUG LOG
+
     res.json({
       user: {
         id: newUser._id,
-        name,
-        email,
-        phone,
+        name: newUser.name,
+        email: newUser.email,
+        phone: newUser.phone,
         coins: newUser.coins
       }
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("Register Error:", err);
     res.status(500).json({ message: "Register error ❌" });
   }
 });
@@ -214,7 +225,7 @@ app.post("/api/login", async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("Login Error:", err);
     res.status(500).json({ message: "Login error ❌" });
   }
 });
@@ -250,15 +261,20 @@ app.post("/api/order", async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("Order Error:", err);
     res.status(500).json({ message: "Order failed ❌" });
   }
 });
 
 /* ================= GET USER ================= */
 app.get("/api/user/:id", async (req, res) => {
-  const user = await User.findById(req.params.id).select("-password");
-  res.json(user);
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+    res.json(user);
+  } catch (err) {
+    console.error("Get User Error:", err);
+    res.status(500).json({ message: "Fetch failed ❌" });
+  }
 });
 
 /* ================= TEST ================= */

@@ -212,10 +212,15 @@ export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
 
       setServerMessage("🎉 Registration Successful!");
 
+      // 🔥 ✅ ADD THIS (IMPORTANT)
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
       setTimeout(() => {
         navigate("/apple", { state: { user: res.data.user } });
       }, 1200);
-    } catch {
+
+    } catch (err) {
+      console.error(err); // 🔥 added for debugging
       setServerError("Server error");
     }
   };
@@ -227,8 +232,7 @@ export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
         background: "#f4f4f4",
         pb: 10,
         boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-        minHeight: isEmbedded ? "auto" : "100vh", // ✅ UPDATED
-       
+        minHeight: isEmbedded ? "auto" : "100vh",
       }}
     >
       <Container maxWidth="sm">
@@ -312,9 +316,7 @@ export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
             />
             */}
 
-            <Box
-              sx={{ display: "flex", justifyContent: "center", mt: 3 }}
-            >
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
               <Button
                 type="submit"
                 variant="contained"

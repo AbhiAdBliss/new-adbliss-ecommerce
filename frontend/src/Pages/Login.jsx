@@ -18,7 +18,7 @@ import {
   Paper
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { GoogleLogin } from "@react-oauth/google";
+// import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 
 export default function SpaceLogin() {
@@ -38,16 +38,9 @@ export default function SpaceLogin() {
 
   /* ================= AUTO LOGIN ================= */
   useEffect(() => {
-    const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
 
-    if (
-      token &&
-      user &&
-      token !== "undefined" &&
-      token !== "null" &&
-      user !== "undefined"
-    ) {
+    if (user && user !== "undefined") {
       navigate("/apple", { replace: true });
     }
   }, [navigate]);
@@ -76,17 +69,20 @@ export default function SpaceLogin() {
     try {
       setLoading(true);
 
-      const res = await axios.post(
-        "http://13.233.120.37:5000/api/login",
-        formData
-      );
+      // 🔥 USE DOMAIN (IMPORTANT)
+      const res = await axios.post("/api/login", {
+        email: formData.email,
+        password: formData.password,
+      });
 
+      // ✅ STORE USER ONLY (NO TOKEN FROM BACKEND)
       localStorage.setItem("user", JSON.stringify(res.data.user));
-      localStorage.setItem("token", res.data.token);
 
+      // 🔥 OPTIONAL EVENT (if header listens)
       window.dispatchEvent(new Event("userUpdated"));
 
-      navigate("/apple");
+      // ✅ PASS USER STATE
+      navigate("/apple", { state: { user: res.data.user } });
 
     } catch (err) {
       console.error("LOGIN ERROR:", err);
@@ -97,22 +93,21 @@ export default function SpaceLogin() {
   };
 
   /* ================= GOOGLE LOGIN ================= */
-  const handleGoogleLogin = async (credentialResponse) => {
-    try {
-      const res = await axios.post(
-        "http://13.233.120.37:5000/api/google-login",
-        { token: credentialResponse.credential }
-      );
+  // const handleGoogleLogin = async (credentialResponse) => {
+  //   try {
+  //     const res = await axios.post(
+  //       "/api/google-login",
+  //       { token: credentialResponse.credential }
+  //     );
 
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      localStorage.setItem("token", res.data.token);
+  //     localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      navigate("/apple");
-    } catch (error) {
-      console.error(error);
-      setApiError("Google login failed ❌");
-    }
-  };
+  //     navigate("/apple");
+  //   } catch (error) {
+  //     console.error(error);
+  //     setApiError("Google login failed ❌");
+  //   }
+  // };
 
   /* ================= UI ================= */
   return (
@@ -218,14 +213,12 @@ export default function SpaceLogin() {
             {loading ? <CircularProgress size={24} /> : "SIGN IN"}
           </Button>
 
-          <Divider>or</Divider>
-
-          <Box display="flex" justifyContent="center">
+          {/* <Box display="flex" justifyContent="center">
             <GoogleLogin
               onSuccess={handleGoogleLogin}
               onError={() => setApiError("Google login failed")}
             />
-          </Box>
+          </Box> */}
 
         </Stack>
       </Paper>
