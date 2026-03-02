@@ -34,7 +34,6 @@ const Header = () => {
   const isHomePage = location.pathname === "/";
   const isApplePage = location.pathname === "/apple";
 
-  // 🔥 HIDE HEADER
   const hideHeader =
     location.pathname === "/login" ||
     location.pathname === "/register";
@@ -46,7 +45,7 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // ✅ USER LOAD
+  // ✅ USER LOAD + LIVE UPDATE (FIXED)
   useEffect(() => {
     const updateUser = () => {
       try {
@@ -57,7 +56,10 @@ const Header = () => {
       }
     };
 
+    // Load initially
     updateUser();
+
+    // Listen for updates
     window.addEventListener("userUpdated", updateUser);
     window.addEventListener("storage", updateUser);
 
@@ -67,11 +69,14 @@ const Header = () => {
     };
   }, []);
 
-  // ✅ LOGOUT FIXED
+  // ✅ LOGOUT
   const handleLogout = () => {
     localStorage.removeItem("user");
-    localStorage.removeItem("token"); // 🔥 IMPORTANT FIX
+    localStorage.removeItem("token");
+
+    // 🔥 Trigger update
     window.dispatchEvent(new Event("userUpdated"));
+
     setAnchorEl(null);
     navigate("/");
   };
@@ -96,29 +101,23 @@ const Header = () => {
 
           {/* LOGO */}
           <Typography
-  component={Link}
-  to={user ? "/apple" : "/"}
-  sx={{ display: "flex", alignItems: "center" }}
->
-  <Box
-    component="img"
-    src={logo}
-    alt="Shopnbliss"
-    sx={{
-      height: 90,
-      pt:0.5
-    }}
-  />
-</Typography>
+            component={Link}
+            to={user ? "/apple" : "/"}
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            <Box
+              component="img"
+              src={logo}
+              alt="Shopnbliss"
+              sx={{ height: 90, pt: 0.5 }}
+            />
+          </Typography>
 
           {/* RIGHT SIDE */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
 
             {/* CART */}
-            <IconButton
-              onClick={() => setCartOpen(true)}
-              sx={{ color: "#fff" }}
-            >
+            <IconButton onClick={() => setCartOpen(true)} sx={{ color: "#fff" }}>
               <Badge badgeContent={cartItems.length} color="error">
                 <ShoppingCartIcon />
               </Badge>
@@ -138,12 +137,12 @@ const Header = () => {
 
                   {/* NAME */}
                   <Typography sx={{ color: "#fff", fontWeight: 500 }}>
-                    {user.name}
+                    {user?.name || "User"}
                   </Typography>
 
                   {/* COINS */}
                   <Chip
-                    label={user.coins || 0}
+                    label={user?.coins || 0}
                     avatar={
                       <Box sx={{ width: 24, height: 24 }}>
                         <video
@@ -175,7 +174,7 @@ const Header = () => {
                   open={Boolean(anchorEl)}
                   onClose={() => setAnchorEl(null)}
                 >
-                  <MenuItem disabled>{user.email}</MenuItem>
+                  <MenuItem disabled>{user?.email}</MenuItem>
                   <Divider />
 
                   <MenuItem onClick={() => navigate("/profile")}>
@@ -193,7 +192,6 @@ const Header = () => {
               </>
             ) : !user ? (
               <>
-                {/* 🔥 LOGIN WITH REDIRECT */}
                 <Button
                   onClick={() =>
                     navigate("/login", {

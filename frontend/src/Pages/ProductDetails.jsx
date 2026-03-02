@@ -16,8 +16,9 @@ import StarIcon from "@mui/icons-material/Star";
 import { useCart } from "../context/useCart";
 import Footer from "../Components/Footer";
 import Register from "../Pages/Register";
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import GoldCoin from "../assets/AppleS-imgs/coin-img.png"; 
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
+import GoldCoin from "../assets/AppleS-imgs/coin-img.png";
+import Coupn from "../assets/AppleS-imgs/coupn-img.png";
 
 import Apple1 from "../assets/AppleS-imgs/Apple1.png";
 import Apple2 from "../assets/AppleS-imgs/Apple2.png";
@@ -28,8 +29,6 @@ import Apple6 from "../assets/AppleS-imgs/Apple6.png";
 import Apple7 from "../assets/AppleS-imgs/Apple7.png";
 import Apple8 from "../assets/AppleS-imgs/Apple8.png";
 import Apple9 from "../assets/AppleS-imgs/Apple9.png";
-
-
 
 const products = [
   {
@@ -186,7 +185,7 @@ export default function ProductDetails() {
 
   return (
     <Box>
-      <Box sx={{ mt: 12, px: { xs: 2, md: 6 }, py: 4, bgcolor: "white", }}>
+      <Box sx={{ mt: 12, px: { xs: 2, md: 6 }, py: 4, bgcolor: "white" }}>
         <Grid
           container
           spacing={{ xs: 4, md: 5 }}
@@ -194,70 +193,71 @@ export default function ProductDetails() {
         >
           {/* LEFT SIDE */}
           <Grid item xs={12} md={4}>
-           <Paper
-  sx={{
-    p: 3,
-    textAlign: "center",
-    border: "1px solid #e4e3e3ff",
-    position: "relative", 
-    overflow: "hidden"
-  }}
->
-  {/* 🔥 COIN STICKER */}
-<Box
-  sx={{
-    position: "absolute",
-    top: 15,
-    left: -35,
-    transform: "rotate(-45deg)",
-    bgcolor: "#f7e895ff", 
-    color: "#000",
-    pl: 3, 
-    pr: 2,
-    py: 0.4,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-start", 
-    gap: 0.5, 
-    zIndex: 2,
-    boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-    width: "140px", 
-  }}
->
-  <Box
-    component="img"
-    src={GoldCoin}
-    alt="coin"
-    sx={{
-      width: 14,
-      height: 14,
-      objectFit: "contain",
-    }}
-  />
+            <Paper
+              sx={{
+                p: 3,
+                textAlign: "center",
+                border: "1px solid #e4e3e3ff",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              {/* 🔥 COIN STICKER */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 15,
+                  left: -35,
+                  transform: "rotate(-45deg)",
+                  bgcolor: "#f7e895ff",
+                  color: "#000",
+                  pl: 3,
+                  pr: 2,
+                  py: 0.4,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                  gap: 0.5,
+                  zIndex: 2,
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                  width: "140px",
+                }}
+              >
+                <Box
+                  component="img"
+                  src={Coupn}
+                  alt="coin"
+                  sx={{
+                    width: 16,
+                    height: 16,
+                    objectFit: "contain",
+                    color:'white',
+                  }}
+                />
 
-  <Typography 
-    sx={{ 
-      fontSize: "10px", 
-      fontWeight: "bold",
-      whiteSpace: "nowrap" 
-    }}
-  >
-    COIN PRODUCT
-  </Typography>
-</Box>
+                <Typography
+                  sx={{
+                    fontSize: "11px",
+                    fontWeight: "bold",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+               Lucky Coupon
+                </Typography>
+              </Box>
 
-  {/* PRODUCT IMAGE */}
-  <Box
-    component="img"
-    src={product?.image}
-    alt={product?.name}
-    sx={{
-      width: "100%",
-      maxWidth: 360,
-      objectFit: "contain"
-    }}
-  />
-</Paper>
+              {/* PRODUCT IMAGE */}
+              <Box
+                component="img"
+                src={product?.image}
+                alt={product?.name}
+                sx={{
+                  width: "100%",
+                  maxWidth: 360,
+                  objectFit: "contain",
+                }}
+              />
+            </Paper>
 
             <Box
               sx={{
@@ -302,16 +302,21 @@ export default function ProductDetails() {
           </Grid>
 
           {/* RIGHT SIDE */}
-          <Grid item xs={12} md={8} >
+          <Grid item xs={12} md={8}>
             <Grid
               container
               spacing={6}
               alignItems="flex-start"
               direction={{ xs: "column", md: "row" }}
             >
-              <Grid item xs={12} md={7} pt={3} sx={{ width:'320px'}}>
-                <Typography variant="h5" fontWeight="bold">
+              <Grid item xs={12} md={7} pt={3} sx={{ width: "320px" }}>
+                <Typography variant="h6" fontWeight="bold">
                   {product.name}
+                </Typography>
+                <Divider sx={{ my: 2 }} />
+
+                <Typography variant="h5">
+                Shop now for a chance to win, or enjoy 100% cashback.
                 </Typography>
                 <Divider sx={{ my: 2 }} />
 
@@ -326,27 +331,7 @@ export default function ProductDetails() {
 
                 <Divider sx={{ my: 2 }} />
 
-                <Typography variant="h6" fontWeight={600}>
-                  Seller
-                </Typography>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Typography color="#2874f0" fontWeight={600}>
-                    Truenet Commerce
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      bgcolor: "#2874f0",
-                      color: "#fff",
-                      px: 1,
-                      borderRadius: 1,
-                      fontSize: 12,
-                    }}
-                  >
-                    4.5 <StarIcon sx={{ fontSize: 14, ml: 0.5 }} />
-                  </Box>
-                </Box>
+                
               </Grid>
 
               {/* SIDEBAR: Only show Register if NOT logged in */}
@@ -363,10 +348,11 @@ export default function ProductDetails() {
                       maxWidth: "520px",
                       width: "100%",
                       ml: { md: "auto" },
-                      
+                     
+                     
                     }}
                   >
-                    <Register/>
+                    <Register isEmbedded/>
                   </Box>
                 </Grid>
               )}

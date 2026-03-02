@@ -13,6 +13,7 @@ import LoadingScreen from "./Pages/LoadingScreen";
 import AppleSection from "./Pages/AppleSection";
 import Checkout from "./Pages/Checkout";
 import OrderSuccess from "./Pages/OrderSuccess";
+import ForgotPassword from "./Pages/ForgotPassword"; // ✅ ADD THIS
 
 import Profile from "./Pages/Profile";
 import ProtectedRoute from "./Components/ProtectedRoute";
@@ -54,10 +55,15 @@ function AppContent() {
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/" element={<Home />} />
 
-        {/* ✅ LOGIN FIX */}
-        <Route path="/login" element={<SpaceLogin/>} />
+        {/* ✅ LOGIN */}
+        <Route path="/login" element={<SpaceLogin />} />
 
+        {/* ✅ REGISTER */}
         <Route path="/register" element={<Register />} />
+
+        {/* 🔥 ADD THIS ROUTE */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
         <Route path="/deal-promo/:id" element={<DealPromo />} />
 
         {/* 🔒 PROFILE */}
@@ -69,6 +75,9 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+
+        {/* ✅ OPTIONAL 404 */}
+        <Route path="*" element={<h2 style={{ textAlign: "center" }}>404 Page Not Found</h2>} />
       </Routes>
     </>
   );

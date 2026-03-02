@@ -13,26 +13,106 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-/* ================= MONGODB CONNECTION ================= */
+/* ================= MONGODB ================= */
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected ✅"))
   .catch((err) => {
-    console.error("MongoDB Connection Error ❌", err.message);
+    console.error("MongoDB Error ❌", err.message);
     process.exit(1);
   });
 
-/* ================= IMPORT MODEL ================= */
+/* ================= MODEL ================= */
 const User = require("./models/User");
 
-/* ================= IMPORT EMAIL UTILS ================= */
+/* ================= EMAIL UTILS ================= */
 const sendOtpEmail = require("./utils/sendOtpEmail");
 const sendOrderEmail = require("./utils/sendEmail");
 
 /* ================= OTP STORE ================= */
 const otpStore = {};
 
-/* ================= SEND OTP ================= */
+/* =========================================================
+   🔐 FORGOT PASSWORD - SEND OTP
+========================================================= */
+app.post("/api/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found ❌" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    otpStore[email] = {
+      otp,
+      expires: Date.now() + 5 * 60 * 1000,
+      verified: false,
+    };
+
+    await sendOtpEmail(email, otp);
+
+    res.json({ message: "OTP sent for password reset ✅" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to send OTP ❌" });
+  }
+});
+
+/* =========================================================
+   🔐 VERIFY OTP (FORGOT PASSWORD)
+========================================================= */
+app.post("/api/verify-reset-otp", (req, res) => {
+  const { email, otp } = req.body;
+
+  const record = otpStore[email];
+
+  if (!record || record.otp !== otp || Date.now() > record.expires) {
+    return res.status(400).json({ message: "Invalid or expired OTP ❌" });
+  }
+
+  otpStore[email].verified = true;
+
+  res.json({ message: "OTP verified ✅" });
+});
+
+/* =========================================================
+   🔐 RESET PASSWORD
+========================================================= */
+app.post("/api/reset-password", async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    const record = otpStore[email];
+
+    if (!record || !record.verified) {
+      return res.status(400).json({ message: "OTP not verified ❌" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await User.updateOne(
+      { email },
+      { $set: { password: hashedPassword } }
+    );
+
+    delete otpStore[email];
+
+    res.json({ message: "Password updated successfully 🎉" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Reset failed ❌" });
+  }
+});
+
+/* =========================================================
+   ❌ UNUSED OTP (REGISTER) - COMMENTED
+========================================================= */
+/*
 app.post("/api/send-otp", async (req, res) => {
   try {
     const { email } = req.body;
@@ -45,7 +125,6 @@ app.post("/api/send-otp", async (req, res) => {
       verified: false
     };
 
-    // ✅ USE SEPARATE FILE
     await sendOtpEmail(email, otp);
 
     res.json({ message: "OTP sent ✅" });
@@ -56,7 +135,6 @@ app.post("/api/send-otp", async (req, res) => {
   }
 });
 
-/* ================= VERIFY OTP ================= */
 app.post("/api/verify-otp", (req, res) => {
   const { email, otp } = req.body;
 
@@ -69,34 +147,12 @@ app.post("/api/verify-otp", (req, res) => {
   otpStore[email].verified = true;
   res.json({ success: true });
 });
-
-/* ================= RESET PASSWORD ================= */
-app.post("/api/reset-password", async (req, res) => {
-  const { email, newPassword } = req.body;
-
-  const record = otpStore[email];
-
-  if (!record || !record.verified) {
-    return res.status(400).json({ message: "OTP not verified ❌" });
-  }
-
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-  await User.updateOne({ email }, { password: hashedPassword });
-
-  delete otpStore[email];
-
-  res.json({ message: "Password updated ✅" });
-});
+*/
 
 /* ================= REGISTER ================= */
 app.post("/api/register", async (req, res) => {
   try {
-    const { name, email, phone, password, isVerified } = req.body;
-
-    if (!isVerified) {
-      return res.status(400).json({ message: "Email not verified ❌" });
-    }
+    const { name, email, phone, password } = req.body;
 
     const existingUser = await User.findOne({ email });
 
@@ -163,10 +219,10 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-/* ================= ORDER + EMAIL ================= */
+/* ================= ORDER ================= */
 app.post("/api/order", async (req, res) => {
   try {
-    const { userId, amount, coinsUsed = 0, address } = req.body;
+    const { userId, amount, coinsUsed = 0 } = req.body;
 
     const user = await User.findById(userId);
 
@@ -174,16 +230,12 @@ app.post("/api/order", async (req, res) => {
       return res.status(404).json({ message: "User not found ❌" });
     }
 
-    // ✅ 1₹ = 1 COIN
     const coinsEarned = Math.floor(amount);
-
-    // ✅ SAFE CALCULATION
     const updatedCoins = Math.max(0, user.coins - coinsUsed + coinsEarned);
 
     user.coins = updatedCoins;
     await user.save();
 
-    // ✅ SEND PROFESSIONAL EMAIL
     await sendOrderEmail(user.email, {
       name: user.name,
       amount,
@@ -214,7 +266,7 @@ app.get("/", (req, res) => {
   res.send("API is running 🚀");
 });
 
-/* ================= START SERVER ================= */
+/* ================= START ================= */
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT} 🚀`);
 });

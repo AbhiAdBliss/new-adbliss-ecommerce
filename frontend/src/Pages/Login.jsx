@@ -36,7 +36,7 @@ export default function SpaceLogin() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  /* ================= AUTO LOGIN FIX ================= */
+  /* ================= AUTO LOGIN ================= */
   useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
@@ -171,6 +171,21 @@ export default function SpaceLogin() {
               ),
             }}
           />
+
+          {/* 🔥 FORGOT PASSWORD */}
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <MuiLink
+              component="button"
+              onClick={() => navigate("/forgot-password")}
+              sx={{
+                fontSize: "16px",
+                color: "#1976d2",
+                "&:hover": { textDecoration: "underline" }
+              }}
+            >
+              Forgot Password?
+            </MuiLink>
+          </Box>
 
           <Stack direction="row" justifyContent="space-between">
             <FormControlLabel
