@@ -190,107 +190,300 @@ export default function Checkout() {
     rzp.open();
   };
 
-  return (
-    <Box sx={{ pt: 15, px: { xs: 2, md: 6 }, bgcolor: "#f5f5f5", pb: 5 }}>
-      <Typography variant="h4" mb={4}>
-        Checkout
-      </Typography>
+ return (
+  <Box
+    sx={{
+      pt: 14,
+      px: { xs: 2, md: 6 },
+      pb: 6,
+      minHeight: "100vh",
+      background: "linear-gradient(to right, #f8fafc, #eef2f7)",
+    }}
+  >
+    <Typography
+      variant="h4"
+      sx={{
+        fontWeight: "bold",
+        mb: 5,
+        color: "#1e293b",
+      }}
+    >
+      Secure Checkout
+    </Typography>
 
-      <form onSubmit={handleOrder}>
-        <Grid container spacing={10}>
+    <form onSubmit={handleOrder}>
+      <Grid container spacing={4}>
+        {/* ================= LEFT SECTION ================= */}
+        <Grid item xs={12} md={8}>
+          <Paper
+            elevation={4}
+            sx={{
+              p: 4,
+              borderRadius: 3,
+              background: "#ffffff",
+              boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+            }}
+          >
+            {authError && (
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                {authError}
+              </Alert>
+            )}
 
-          {/* LEFT */}
-          <Grid item xs={12} md={8}>
-            <Paper sx={{ p: 4 }}>
-
-              {authError && <Alert severity="warning">{authError}</Alert>}
-
+            {/* CART ITEMS */}
+            <Box sx={{ maxHeight: 320, overflowY: "auto", pr: 1 }}>
               {cartItems.map((item, index) => (
-                <Box key={index} sx={{ display: "flex", gap: 2, mb: 2 }}>
-                  <Avatar src={item.image} sx={{ width: 120, height: 120 }} />
-                  <Box>
-                    <Typography>{item.name}</Typography>
-                    <Typography>Qty: {item.quantity}</Typography>
-                    <Button onClick={() => removeFromCart(item.id)}>
-                      Remove
-                    </Button>
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    mb: 3,
+                    p: 2,
+                    borderRadius: 2,
+                    background: "#f9fafb",
+                  }}
+                >
+                  <Box sx={{ display: "flex", gap: 2 }}>
+                    <Avatar
+                      src={item.image}
+                      variant="rounded"
+                      sx={{ width: 150, height: 150 }}
+                    />
+                    <Box>
+                      <Typography fontWeight={600}>
+                        {item.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Qty: {item.quantity}
+                      </Typography>
+                      <Button
+                        size="small"
+                        sx={{ mt: 1 }}
+                        onClick={() => removeFromCart(item.id)}
+                      >
+                        Remove
+                      </Button>
+                    </Box>
                   </Box>
-                  <Typography>₹{item.price}</Typography>
+
+                  <Typography fontWeight="bold">
+                    ₹{item.price}
+                  </Typography>
                 </Box>
               ))}
+            </Box>
 
-              <Divider sx={{ my: 3 }} />
+            <Divider sx={{ my: 4 }} />
 
-              <Typography textAlign="center" fontSize={20}>
-                Shipping Details
-              </Typography>
+            {/* SHIPPING DETAILS */}
+            <Typography
+              variant="h6"
+              sx={{ fontWeight: "bold", mb: 3 }}
+            >
+              Shipping Details
+            </Typography>
 
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <TextField fullWidth label="Name" value={form.name} onChange={handleChange("name")} />
-                </Grid>
-
-                <Grid item xs={6}>
-                  <TextField fullWidth label="Phone" value={form.phone} onChange={handleChange("phone")} />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField fullWidth label="Email" value={form.email} onChange={handleChange("email")} />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField fullWidth label="Address" value={form.address1} onChange={handleChange("address1")} />
-                </Grid>
-
-                <Grid item xs={6}>
-                  <TextField fullWidth label="City" value={form.city} onChange={handleChange("city")} />
-                </Grid>
-
-                <Grid item xs={6}>
-                  <TextField fullWidth label="State" value={form.state} onChange={handleChange("state")} />
-                </Grid>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Full Name"
+                  value={form.name}
+                  onChange={handleChange("name")}
+                />
               </Grid>
 
-              <Divider sx={{ my: 2 }} />
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Phone"
+                  value={form.phone}
+                  onChange={handleChange("phone")}
+                />
+              </Grid>
 
-              <TextField value={coupon} onChange={(e) => setCoupon(e.target.value)} />
-              <Button onClick={applyCoupon}>Apply</Button>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  value={form.email}
+                  onChange={handleChange("email")}
+                />
+              </Grid>
 
-              {couponMsg && <Alert severity={couponMsg.type}>{couponMsg.text}</Alert>}
-              {paymentError && <Alert severity="error">{paymentError}</Alert>}
-            </Paper>
-          </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Address"
+                  value={form.address1}
+                  onChange={handleChange("address1")}
+                />
+              </Grid>
 
-          {/* RIGHT */}
-          <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 3 }}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="City"
+                  value={form.city}
+                  onChange={handleChange("city")}
+                />
+              </Grid>
 
-              <Typography>Subtotal: ₹{subtotal}</Typography>
-              <Typography>Fee: ₹{Protectfee}</Typography>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="State"
+                  value={form.state}
+                  onChange={handleChange("state")}
+                />
+              </Grid>
+            </Grid>
 
-              {/* ✅ FIXED setUseCoins */}
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={useCoins}
-                    onChange={(e) => setUseCoins(e.target.checked)}
-                  />
-                }
-                label="Use Coins"
+            <Divider sx={{ my: 4 }} />
+
+            {/* COUPON */}
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <TextField
+                
+                label="Coupon Code"
+                value={coupon}
+                onChange={(e) => setCoupon(e.target.value)}
               />
-
-              {useCoins && <Typography color="green">-₹{coinsUsed}</Typography>}
-
-              <Typography>Total: ₹{total}</Typography>
-
-              <Button type="submit" fullWidth variant="contained">
-                {loading ? <CircularProgress size={20} /> : "Pay Now"}
+              <Button
+                variant="outlined"
+                onClick={applyCoupon}
+                sx={{
+                  borderColor: "#2F80ED",
+                  color: "#2F80ED",
+                  fontWeight: 600,
+               
+                }}
+              >
+                Apply
               </Button>
-            </Paper>
-          </Grid>
+            </Box>
 
+            {couponMsg && (
+              <Alert
+                severity={couponMsg.type}
+                sx={{ mt: 2 }}
+              >
+                {couponMsg.text}
+              </Alert>
+            )}
+
+            {paymentError && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {paymentError}
+              </Alert>
+            )}
+          </Paper>
         </Grid>
-      </form>
-    </Box>
-  );
+
+        {/* ================= RIGHT SECTION ================= */}
+        <Grid item xs={12} md={4} width={400}>
+          <Paper
+            elevation={6}
+            sx={{
+              p: 4,
+              borderRadius: 3,
+              background: "linear-gradient(145deg, #ffffff, #f3f6fa)",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+              position: "sticky",
+              top: 120,
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{ fontWeight: "bold", mb: 3 }}
+            >
+              Order Summary
+            </Typography>
+
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+              <Typography color="text.secondary">Subtotal</Typography>
+              <Typography fontWeight={500}>₹{subtotal}</Typography>
+            </Box>
+
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+              <Typography color="text.secondary">Protection Fee</Typography>
+              <Typography fontWeight={500}>₹{Protectfee}</Typography>
+            </Box>
+
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={useCoins}
+                  onChange={(e) => setUseCoins(e.target.checked)}
+                  sx={{
+                    color: "#2F80ED",
+                    "&.Mui-checked": { color: "#2F80ED" },
+                  }}
+                />
+              }
+              label="Use Coins"
+            />
+
+            {useCoins && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  mb: 2,
+                }}
+              >
+                <Typography color="green">Coins Applied</Typography>
+                <Typography color="green" fontWeight="bold">
+                  -₹{coinsUsed}
+                </Typography>
+              </Box>
+            )}
+
+            <Divider sx={{ my: 2 }} />
+
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+              <Typography variant="h6" fontWeight="bold">
+                Total
+              </Typography>
+              <Typography
+                variant="h6"
+                fontWeight="bold"
+                sx={{ color: "#2F80ED" }}
+              >
+                ₹{total}
+              </Typography>
+            </Box>
+
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{
+                py: 1.5,
+                fontWeight: "bold",
+                fontSize: "16px",
+                borderRadius: "12px",
+                background: "linear-gradient(90deg, #2F80ED, #9B6DFF)",
+                boxShadow: "0 8px 20px rgba(47,128,237,0.4)",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  background: "linear-gradient(90deg, #2563eb, #8b5cf6)",
+                  transform: "translateY(-2px)",
+                },
+              }}
+            >
+              {loading ? (
+                <CircularProgress size={20} sx={{ color: "#fff" }} />
+              ) : (
+                "Pay Now"
+              )}
+            </Button>
+          </Paper>
+        </Grid>
+      </Grid>
+    </form>
+  </Box>
+);
 }

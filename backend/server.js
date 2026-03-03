@@ -10,7 +10,19 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 /* ================= MIDDLEWARE ================= */
-app.use(cors());
+
+// ✅ CORS FIX (WORKS LOCAL + EC2)
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // Vite Local
+      "http://localhost:3000", // Optional
+      process.env.FRONTEND_URL // EC2 frontend URL (optional)
+    ].filter(Boolean),
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 /* ================= MONGODB ================= */
@@ -39,14 +51,12 @@ app.post("/api/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
 
-    if (!email) {
+    if (!email)
       return res.status(400).json({ message: "Email required ❌" });
-    }
 
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user)
       return res.status(400).json({ message: "User not found ❌" });
-    }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -74,9 +84,8 @@ app.post("/api/verify-reset-otp", (req, res) => {
 
   const record = otpStore[email];
 
-  if (!record || record.otp !== otp || Date.now() > record.expires) {
+  if (!record || record.otp !== otp || Date.now() > record.expires)
     return res.status(400).json({ message: "Invalid or expired OTP ❌" });
-  }
 
   otpStore[email].verified = true;
 
@@ -92,9 +101,8 @@ app.post("/api/reset-password", async (req, res) => {
 
     const record = otpStore[email];
 
-    if (!record || !record.verified) {
+    if (!record || !record.verified)
       return res.status(400).json({ message: "OTP not verified ❌" });
-    }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
@@ -113,61 +121,18 @@ app.post("/api/reset-password", async (req, res) => {
   }
 });
 
-/* =========================================================
-   ❌ UNUSED OTP (REGISTER) - COMMENTED
-========================================================= */
-/*
-app.post("/api/send-otp", async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    otpStore[email] = {
-      otp,
-      expires: Date.now() + 5 * 60 * 1000,
-      verified: false
-    };
-
-    await sendOtpEmail(email, otp);
-
-    res.json({ message: "OTP sent ✅" });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "OTP failed ❌" });
-  }
-});
-
-app.post("/api/verify-otp", (req, res) => {
-  const { email, otp } = req.body;
-
-  const record = otpStore[email];
-
-  if (!record || record.otp !== otp) {
-    return res.status(400).json({ message: "Invalid OTP ❌" });
-  }
-
-  otpStore[email].verified = true;
-  res.json({ success: true });
-});
-*/
-
 /* ================= REGISTER ================= */
 app.post("/api/register", async (req, res) => {
   try {
     const { name, email, phone, password } = req.body;
 
-    // 🔥 VALIDATION (ADDED)
-    if (!name || !email || !phone || !password) {
+    if (!name || !email || !phone || !password)
       return res.status(400).json({ message: "All fields required ❌" });
-    }
 
     const existingUser = await User.findOne({ email });
 
-    if (existingUser) {
+    if (existingUser)
       return res.status(400).json({ message: "User already exists ❌" });
-    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -176,10 +141,10 @@ app.post("/api/register", async (req, res) => {
       email,
       phone,
       password: hashedPassword,
-      coins: 0
+      coins: 0,
     });
 
-    console.log("User Saved ✅", newUser.email); // 🔥 DEBUG LOG
+    console.log("User Saved ✅", newUser.email);
 
     res.json({
       user: {
@@ -187,8 +152,8 @@ app.post("/api/register", async (req, res) => {
         name: newUser.name,
         email: newUser.email,
         phone: newUser.phone,
-        coins: newUser.coins
-      }
+        coins: newUser.coins,
+      },
     });
 
   } catch (err) {
@@ -204,15 +169,13 @@ app.post("/api/login", async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    if (!user) {
+    if (!user)
       return res.status(400).json({ message: "User not found ❌" });
-    }
 
     const match = await bcrypt.compare(password, user.password);
 
-    if (!match) {
+    if (!match)
       return res.status(400).json({ message: "Invalid password ❌" });
-    }
 
     res.json({
       user: {
@@ -220,8 +183,8 @@ app.post("/api/login", async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        coins: user.coins
-      }
+        coins: user.coins,
+      },
     });
 
   } catch (err) {
@@ -237,12 +200,14 @@ app.post("/api/order", async (req, res) => {
 
     const user = await User.findById(userId);
 
-    if (!user) {
+    if (!user)
       return res.status(404).json({ message: "User not found ❌" });
-    }
 
     const coinsEarned = Math.floor(amount);
-    const updatedCoins = Math.max(0, user.coins - coinsUsed + coinsEarned);
+    const updatedCoins = Math.max(
+      0,
+      user.coins - coinsUsed + coinsEarned
+    );
 
     user.coins = updatedCoins;
     await user.save();
@@ -252,12 +217,12 @@ app.post("/api/order", async (req, res) => {
       amount,
       coinsEarned,
       coinsUsed,
-      totalCoins: updatedCoins
+      totalCoins: updatedCoins,
     });
 
     res.json({
       success: true,
-      coins: updatedCoins
+      coins: updatedCoins,
     });
 
   } catch (err) {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import API from "../api";   
 import {
   Box,
   Container,
@@ -78,7 +78,7 @@ export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
     }
 
     try {
-      const res = await axios.post("/api/register", {
+      const res = await API.post("/api/register", {
         name: values.name,
         email: values.email,
         phone: values.phone,
