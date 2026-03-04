@@ -1,23 +1,27 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+
 import Header from "./Components/Header";
 import ScrollToTop from "./Components/ScrollToTop";
 
 import Hero from "./Pages/Hero";
 import HomePage from "./Pages/HomePage";
-import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import DealPromo from "./Pages/DealPromo";
 import ProductDetails from "./Pages/ProductDetails";
-import LoadingScreen from "./Pages/LoadingScreen";
 import AppleSection from "./Pages/AppleSection";
 import Checkout from "./Pages/Checkout";
 import OrderSuccess from "./Pages/OrderSuccess";
-import ForgotPassword from "./Pages/ForgotPassword"; // ✅ ADD THIS
+import ForgotPassword from "./Pages/ForgotPassword";
+import Profile from "./Profile/Profile";
+import Orders from "./Profile/Orders";
+import Security from "./Profile/Security";   // ✅ FIXED IMPORT
 
-import Profile from "./Pages/Profile";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import SpaceLogin from "./Pages/Login";
+
+import LoadingPage from "./Loading/LoadingPage";
+import Addresses from "./Profile/Addresses";
 
 const Home = () => (
   <>
@@ -28,8 +32,19 @@ const Home = () => (
 
 function AppContent() {
   const location = useLocation();
+  const [loading, setLoading] = useState(true);
 
   const hideHeader = location.pathname === "/order-success";
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 700);
+
+    return () => clearTimeout(timer);
+  }, [location]);
+
+  if (loading) return <LoadingPage />;
 
   return (
     <>
@@ -37,10 +52,9 @@ function AppContent() {
       <ScrollToTop />
 
       <Routes>
-        <Route path="/loading" element={<LoadingScreen />} />
         <Route path="/apple" element={<AppleSection />} />
 
-        {/* 🔒 PROTECTED CHECKOUT */}
+        {/* ================= CHECKOUT (PROTECTED) ================= */}
         <Route
           path="/checkout"
           element={
@@ -53,20 +67,18 @@ function AppContent() {
         <Route path="/order-success" element={<OrderSuccess />} />
 
         <Route path="/product/:id" element={<ProductDetails />} />
+
         <Route path="/" element={<Home />} />
 
-        {/* ✅ LOGIN */}
         <Route path="/login" element={<SpaceLogin />} />
 
-        {/* ✅ REGISTER */}
         <Route path="/register" element={<Register />} />
 
-        {/* 🔥 ADD THIS ROUTE */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         <Route path="/deal-promo/:id" element={<DealPromo />} />
 
-        {/* 🔒 PROFILE */}
+        {/* ================= PROFILE (PROTECTED) ================= */}
         <Route
           path="/profile"
           element={
@@ -76,8 +88,40 @@ function AppContent() {
           }
         />
 
-        {/* ✅ OPTIONAL 404 */}
-        <Route path="*" element={<h2 style={{ textAlign: "center" }}>404 Page Not Found</h2>} />
+        {/* ================= ORDERS (PROTECTED) ================= */}
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <Orders />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ================= SECURITY PAGE (PROTECTED) ================= */}
+        <Route
+          path="/security"
+          element={
+            <ProtectedRoute>
+              <Security />
+            </ProtectedRoute>
+          }
+        />
+        {/* ================= Addresses (PROTECTED) ================= */}
+        <Route
+          path="/addresses"
+          element={
+            <ProtectedRoute>
+              <Addresses/>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ================= 404 ================= */}
+        <Route
+          path="*"
+          element={<h2 style={{ textAlign: "center" }}>404 Page Not Found</h2>}
+        />
       </Routes>
     </>
   );

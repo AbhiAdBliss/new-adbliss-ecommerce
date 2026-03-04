@@ -15,9 +15,11 @@ import {
   Divider,
   Alert,
   CircularProgress,
-  Paper
+  Paper,
+  Backdrop
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 // import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 
@@ -69,19 +71,15 @@ export default function SpaceLogin() {
     try {
       setLoading(true);
 
-      // 🔥 USE DOMAIN (IMPORTANT)
       const res = await axios.post("/api/login", {
         email: formData.email,
         password: formData.password,
       });
 
-      // ✅ STORE USER ONLY (NO TOKEN FROM BACKEND)
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      // 🔥 OPTIONAL EVENT (if header listens)
       window.dispatchEvent(new Event("userUpdated"));
 
-      // ✅ PASS USER STATE
       navigate("/apple", { state: { user: res.data.user } });
 
     } catch (err) {
@@ -111,117 +109,148 @@ export default function SpaceLogin() {
 
   /* ================= UI ================= */
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        bgcolor: "#f4f4f4"
-      }}
-    >
-      <Paper
-        elevation={6}
+    <>
+      {/* 🔥 LOGIN PROCESSING LOADER */}
+      <Backdrop
+        open={loading}
         sx={{
-          p: 5,
-          width: 400,
-          borderRadius: 4,
-          textAlign: "center"
+          color: "#fff",
+          zIndex: 9999,
+          backgroundColor: "rgba(0,0,0,0.85)",
         }}
       >
-        <Stack spacing={2}>
-
-          <Typography variant="h4" fontWeight="bold">
-            Welcome Back
-          </Typography>
-
-          <Typography variant="body2" color="text.secondary">
-            Login to your account
-          </Typography>
-
-          {apiError && <Alert severity="error">{apiError}</Alert>}
-
-          <TextField
-            label="Email"
-            fullWidth
-            value={formData.email}
-            onChange={handleInputChange("email")}
-            error={!!errors.email}
-            helperText={errors.email}
-          />
-
-          <TextField
-            label="Password"
-            type={showPassword ? "text" : "password"}
-            fullWidth
-            value={formData.password}
-            onChange={handleInputChange("password")}
-            error={!!errors.password}
-            helperText={errors.password}
-            InputProps={{
-              endAdornment: (
-                <IconButton onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              ),
+        <Stack spacing={3} alignItems="center">
+          <ShoppingBagIcon
+            sx={{
+              fontSize: 60,
+              color: "#1976d2",
+              animation: "pulse 1.5s infinite",
             }}
           />
 
-          {/* 🔥 FORGOT PASSWORD */}
-          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-            <MuiLink
-              component="button"
-              onClick={() => navigate("/forgot-password")}
+          <Typography variant="h5">Signing you in...</Typography>
+
+          <CircularProgress size={45} thickness={4} sx={{ color: "#1976d2" }} />
+        </Stack>
+      </Backdrop>
+
+      <Box
+        sx={{
+          "@keyframes pulse": {
+            "0%": { transform: "scale(1)" },
+            "50%": { transform: "scale(1.15)" },
+            "100%": { transform: "scale(1)" }
+          },
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          bgcolor: "#f4f4f4"
+        }}
+      >
+        <Paper
+          elevation={6}
+          sx={{
+            p: 5,
+            width: 400,
+            borderRadius: 4,
+            textAlign: "center"
+          }}
+        >
+          <Stack spacing={2}>
+
+            <Typography variant="h4" fontWeight="bold">
+              Welcome Back
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              Login to your account
+            </Typography>
+
+            {apiError && <Alert severity="error">{apiError}</Alert>}
+
+            <TextField
+              label="Email"
+              fullWidth
+              value={formData.email}
+              onChange={handleInputChange("email")}
+              error={!!errors.email}
+              helperText={errors.email}
+            />
+
+            <TextField
+              label="Password"
+              type={showPassword ? "text" : "password"}
+              fullWidth
+              value={formData.password}
+              onChange={handleInputChange("password")}
+              error={!!errors.password}
+              helperText={errors.password}
+              InputProps={{
+                endAdornment: (
+                  <IconButton onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                ),
+              }}
+            />
+
+            {/* 🔥 FORGOT PASSWORD */}
+            <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+              <MuiLink
+                component="button"
+                onClick={() => navigate("/forgot-password")}
+                sx={{
+                  fontSize: "16px",
+                  color: "#1976d2",
+                  "&:hover": { textDecoration: "underline" }
+                }}
+              >
+                Forgot Password?
+              </MuiLink>
+            </Box>
+
+            <Stack direction="row" justifyContent="space-between">
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.rememberMe}
+                    onChange={handleInputChange("rememberMe")}
+                  />
+                }
+                label="Remember me"
+              />
+
+              <MuiLink component="button" onClick={() => navigate("/register")}>
+                Sign Up
+              </MuiLink>
+            </Stack>
+
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={handleSubmit}
               sx={{
-                fontSize: "16px",
-                color: "#1976d2",
-                "&:hover": { textDecoration: "underline" }
+                bgcolor: "#111",
+                borderRadius: "8px",
+                py: 1.2,
+                fontWeight: "bold",
+                "&:hover": { bgcolor: "#333" }
               }}
             >
-              Forgot Password?
-            </MuiLink>
-          </Box>
+              {loading ? <CircularProgress size={24} color="inherit" /> : "SIGN IN"}
+            </Button>
 
-          <Stack direction="row" justifyContent="space-between">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={formData.rememberMe}
-                  onChange={handleInputChange("rememberMe")}
-                />
-              }
-              label="Remember me"
-            />
+            {/* <Box display="flex" justifyContent="center">
+              <GoogleLogin
+                onSuccess={handleGoogleLogin}
+                onError={() => setApiError("Google login failed")}
+              />
+            </Box> */}
 
-            <MuiLink component="button" onClick={() => navigate("/register")}>
-              Sign Up
-            </MuiLink>
           </Stack>
-
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={handleSubmit}
-            sx={{
-              bgcolor: "#111",
-              borderRadius: "8px",
-              py: 1.2,
-              fontWeight: "bold",
-              "&:hover": { bgcolor: "#333" }
-            }}
-          >
-            {loading ? <CircularProgress size={24} /> : "SIGN IN"}
-          </Button>
-
-          {/* <Box display="flex" justifyContent="center">
-            <GoogleLogin
-              onSuccess={handleGoogleLogin}
-              onError={() => setApiError("Google login failed")}
-            />
-          </Box> */}
-
-        </Stack>
-      </Paper>
-    </Box>
+        </Paper>
+      </Box>
+    </>
   );
 }

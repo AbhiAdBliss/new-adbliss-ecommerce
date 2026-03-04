@@ -9,16 +9,18 @@ import {
   Divider,
   Snackbar,
   Alert,
+  CircularProgress,
+  Backdrop,
+  Stack,
 } from "@mui/material";
 
 import { useParams, useNavigate } from "react-router-dom";
-import StarIcon from "@mui/icons-material/Star";
+
 import { useCart } from "../context/useCart";
 import Footer from "../Components/Footer";
 import Register from "../Pages/Register";
-import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
-import GoldCoin from "../assets/AppleS-imgs/coin-img.png";
 import Coupn from "../assets/AppleS-imgs/coupn-img.png";
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 
 import Apple1 from "../assets/AppleS-imgs/Apple1.png";
 import Apple2 from "../assets/AppleS-imgs/Apple2.png";
@@ -160,6 +162,7 @@ export default function ProductDetails() {
   const isLoggedIn = localStorage.getItem("user");
 
   const [openToast, setOpenToast] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
 
   if (!product)
     return <Typography sx={{ mt: 10 }}>Product not found</Typography>;
@@ -169,8 +172,12 @@ export default function ProductDetails() {
     if (!isLoggedIn) {
       setOpenToast(true);
     } else {
-      addToCart(product);
-      navigate("/cart"); // Redirect to cart page after adding
+      setLoading(true);
+
+      setTimeout(() => {
+        addToCart(product);
+        navigate("/cart");
+      }, 700);
     }
   };
 
@@ -178,13 +185,43 @@ export default function ProductDetails() {
     if (!isLoggedIn) {
       setOpenToast(true);
     } else {
-      addToCart(product);
-      navigate("/checkout"); // Redirect to checkout
+      setLoading(true);
+
+      setTimeout(() => {
+        addToCart(product);
+        navigate("/checkout");
+      }, 700);
     }
   };
 
   return (
     <Box>
+      {/* laoding */}
+      <Box>
+        <Backdrop
+          open={loading}
+          sx={{
+            color: "#fff",
+            zIndex: 9999,
+            backgroundColor: "rgba(0,0,0,0.85)",
+          }}
+        >
+          <Stack spacing={3} alignItems="center">
+            <ShoppingBagIcon
+              sx={{
+                fontSize: 60,
+                color: "#2F80ED",
+              }}
+            />
+
+            <Typography variant="h6">Preparing your order...</Typography>
+
+            <CircularProgress size={45} sx={{ color: "#2F80ED" }} />
+          </Stack>
+        </Backdrop>
+      </Box>
+
+      {/* section */}
       <Box sx={{ mt: 12, px: { xs: 2, md: 6 }, py: 4, bgcolor: "white" }}>
         <Grid
           container
@@ -231,7 +268,7 @@ export default function ProductDetails() {
                     width: 16,
                     height: 16,
                     objectFit: "contain",
-                    color:'white',
+                    color: "white",
                   }}
                 />
 
@@ -242,7 +279,7 @@ export default function ProductDetails() {
                     whiteSpace: "nowrap",
                   }}
                 >
-               Lucky Coupon
+                  Lucky Coupon
                 </Typography>
               </Box>
 
@@ -316,7 +353,7 @@ export default function ProductDetails() {
                 <Divider sx={{ my: 2 }} />
 
                 <Typography variant="h5">
-                Shop now for a chance to win, or enjoy 100% cashback.
+                  Shop now for a chance to win, or enjoy 100% cashback.
                 </Typography>
                 <Divider sx={{ my: 2 }} />
 
@@ -330,8 +367,6 @@ export default function ProductDetails() {
                 </Box>
 
                 <Divider sx={{ my: 2 }} />
-
-                
               </Grid>
 
               {/* SIDEBAR: Only show Register if NOT logged in */}
@@ -348,11 +383,9 @@ export default function ProductDetails() {
                       maxWidth: "520px",
                       width: "100%",
                       ml: { md: "auto" },
-                     
-                     
                     }}
                   >
-                    <Register isEmbedded/>
+                    <Register isEmbedded />
                   </Box>
                 </Grid>
               )}

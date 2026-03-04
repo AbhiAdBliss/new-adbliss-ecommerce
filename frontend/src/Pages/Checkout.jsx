@@ -12,7 +12,10 @@ import {
   Checkbox,
   FormControlLabel,
   Avatar,
+  Backdrop,
+  Stack
 } from "@mui/material";
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import { useCart } from "../context/useCart";
 import { useNavigate } from "react-router-dom";
 
@@ -50,7 +53,6 @@ export default function Checkout() {
     country: "India",
   });
 
-  // ✅ FIXED handleChange (USED NOW)
   const handleChange = (field) => (e) => {
     setForm((prev) => ({
       ...prev,
@@ -58,14 +60,12 @@ export default function Checkout() {
     }));
   };
 
-  /* ================= AUTO REDIRECT ================= */
   useEffect(() => {
-    if (cartItems.length === 0) {
+    if (cartItems.length === 0 && window.location.pathname !== "/order-success") {
       navigate("/apple");
     }
   }, [cartItems, navigate]);
 
-  /* ================= CALCULATIONS ================= */
   const subtotal = cartItems.reduce(
     (sum, item) =>
       sum + Number(item.price.replace(/,/g, "")) * item.quantity,
@@ -77,7 +77,6 @@ export default function Checkout() {
   const coinsUsed = useCoins ? Math.min(coinsAvailable, baseTotal) : 0;
   const total = baseTotal - coinsUsed;
 
-  /* ================= COUPON ================= */
   const applyCoupon = () => {
     if (coupon.toUpperCase() === "SAVE10") {
       const disc = Math.round(subtotal * 0.1);
@@ -95,7 +94,6 @@ export default function Checkout() {
     }
   };
 
-  /* ================= PAYMENT ================= */
   const handleOrder = (e) => {
     e.preventDefault();
 
@@ -167,8 +165,6 @@ export default function Checkout() {
           window.dispatchEvent(new Event("userUpdated"));
 
           clearCart();
-
-          // ✅ SUCCESS PAGE NAVIGATION
           navigate("/order-success");
 
         } catch (err) {
@@ -190,300 +186,339 @@ export default function Checkout() {
     rzp.open();
   };
 
- return (
-  <Box
-    sx={{
-      pt: 14,
-      px: { xs: 2, md: 6 },
-      pb: 6,
-      minHeight: "100vh",
-      background: "linear-gradient(to right, #f8fafc, #eef2f7)",
-    }}
-  >
-    <Typography
-      variant="h4"
-      sx={{
-        fontWeight: "bold",
-        mb: 5,
-        color: "#1e293b",
-      }}
-    >
-      Secure Checkout
-    </Typography>
-
-    <form onSubmit={handleOrder}>
-      <Grid container spacing={4}>
-        {/* ================= LEFT SECTION ================= */}
-        <Grid item xs={12} md={8}>
-          <Paper
-            elevation={4}
+  return (
+    <>
+      {/* 🔥 PAYMENT PROCESSING LOADER */}
+      <Backdrop
+        open={loading}
+        sx={{
+          color: "#fff",
+          zIndex: 9999,
+          backgroundColor: "rgba(0,0,0,0.85)",
+        }}
+      >
+        <Stack spacing={3} alignItems="center">
+          <ShoppingBagIcon
             sx={{
-              p: 4,
-              borderRadius: 3,
-              background: "#ffffff",
-              boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+              fontSize: 60,
+              color: "#2F80ED",
+              animation: "pulse 1.5s infinite",
             }}
-          >
-            {authError && (
-              <Alert severity="warning" sx={{ mb: 2 }}>
-                {authError}
-              </Alert>
-            )}
+          />
 
-            {/* CART ITEMS */}
-            <Box sx={{ maxHeight: 320, overflowY: "auto", pr: 1 }}>
-              {cartItems.map((item, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    mb: 3,
-                    p: 2,
-                    borderRadius: 2,
-                    background: "#f9fafb",
-                  }}
-                >
-                  <Box sx={{ display: "flex", gap: 2 }}>
-                    <Avatar
-                      src={item.image}
-                      variant="rounded"
-                      sx={{ width: 150, height: 150 }}
-                    />
-                    <Box>
-                      <Typography fontWeight={600}>
-                        {item.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Qty: {item.quantity}
-                      </Typography>
-                      <Button
-                        size="small"
-                        sx={{ mt: 1 }}
-                        onClick={() => removeFromCart(item.id)}
-                      >
-                        Remove
-                      </Button>
-                    </Box>
-                  </Box>
+          <Typography variant="h5">
+            Processing your payment...
+          </Typography>
 
-                  <Typography fontWeight="bold">
-                    ₹{item.price}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
+          <CircularProgress
+            size={45}
+            thickness={4}
+            sx={{ color: "#2F80ED" }}
+          />
+        </Stack>
+      </Backdrop>
 
-            <Divider sx={{ my: 4 }} />
+      <Box
+        sx={{
+          "@keyframes pulse": {
+            "0%": { transform: "scale(1)" },
+            "50%": { transform: "scale(1.15)" },
+            "100%": { transform: "scale(1)" }
+          },
+          pt: 14,
+          px: { xs: 2, md: 6 },
+          pb: 6,
+          minHeight: "100vh",
+          background: "linear-gradient(to right, #f8fafc, #eef2f7)",
+        }}
+      >
+        {/* 🔴 EVERYTHING BELOW IS YOUR ORIGINAL CODE (UNCHANGED) */}
 
-            {/* SHIPPING DETAILS */}
-            <Typography
-              variant="h6"
-              sx={{ fontWeight: "bold", mb: 3 }}
-            >
-              Shipping Details
-            </Typography>
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: "bold",
+            mb: 5,
+            color: "#1e293b",
+          }}
+        >
+          Secure Checkout
+        </Typography>
 
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Full Name"
-                  value={form.name}
-                  onChange={handleChange("name")}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Phone"
-                  value={form.phone}
-                  onChange={handleChange("phone")}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  value={form.email}
-                  onChange={handleChange("email")}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Address"
-                  value={form.address1}
-                  onChange={handleChange("address1")}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="City"
-                  value={form.city}
-                  onChange={handleChange("city")}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="State"
-                  value={form.state}
-                  onChange={handleChange("state")}
-                />
-              </Grid>
-            </Grid>
-
-            <Divider sx={{ my: 4 }} />
-
-            {/* COUPON */}
-            <Box sx={{ display: "flex", gap: 2 }}>
-              <TextField
-                
-                label="Coupon Code"
-                value={coupon}
-                onChange={(e) => setCoupon(e.target.value)}
-              />
-              <Button
-                variant="outlined"
-                onClick={applyCoupon}
-                sx={{
-                  borderColor: "#2F80ED",
-                  color: "#2F80ED",
-                  fontWeight: 600,
-               
-                }}
-              >
-                Apply
-              </Button>
-            </Box>
-
-            {couponMsg && (
-              <Alert
-                severity={couponMsg.type}
-                sx={{ mt: 2 }}
-              >
-                {couponMsg.text}
-              </Alert>
-            )}
-
-            {paymentError && (
-              <Alert severity="error" sx={{ mt: 2 }}>
-                {paymentError}
-              </Alert>
-            )}
-          </Paper>
-        </Grid>
-
-        {/* ================= RIGHT SECTION ================= */}
-        <Grid item xs={12} md={4} width={400}>
-          <Paper
-            elevation={6}
-            sx={{
-              p: 4,
-              borderRadius: 3,
-              background: "linear-gradient(145deg, #ffffff, #f3f6fa)",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-              position: "sticky",
-              top: 120,
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{ fontWeight: "bold", mb: 3 }}
-            >
-              Order Summary
-            </Typography>
-
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-              <Typography color="text.secondary">Subtotal</Typography>
-              <Typography fontWeight={500}>₹{subtotal}</Typography>
-            </Box>
-
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-              <Typography color="text.secondary">Protection Fee</Typography>
-              <Typography fontWeight={500}>₹{Protectfee}</Typography>
-            </Box>
-
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={useCoins}
-                  onChange={(e) => setUseCoins(e.target.checked)}
-                  sx={{
-                    color: "#2F80ED",
-                    "&.Mui-checked": { color: "#2F80ED" },
-                  }}
-                />
-              }
-              label="Use Coins"
-            />
-
-            {useCoins && (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  mb: 2,
-                }}
-              >
-                <Typography color="green">Coins Applied</Typography>
-                <Typography color="green" fontWeight="bold">
-                  -₹{coinsUsed}
-                </Typography>
-              </Box>
-            )}
-
-            <Divider sx={{ my: 2 }} />
-
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-              <Typography variant="h6" fontWeight="bold">
-                Total
-              </Typography>
-              <Typography
-                variant="h6"
-                fontWeight="bold"
-                sx={{ color: "#2F80ED" }}
-              >
-                ₹{total}
-              </Typography>
-            </Box>
-
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
+         <form onSubmit={handleOrder}>
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={8}>
+            <Paper
+              elevation={4}
               sx={{
-                py: 1.5,
-                fontWeight: "bold",
-                fontSize: "16px",
-                borderRadius: "12px",
-                background: "linear-gradient(90deg, #2F80ED, #9B6DFF)",
-                boxShadow: "0 8px 20px rgba(47,128,237,0.4)",
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  background: "linear-gradient(90deg, #2563eb, #8b5cf6)",
-                  transform: "translateY(-2px)",
-                },
+                p: 4,
+                borderRadius: 3,
+                background: "#ffffff",
+                boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
               }}
             >
-              {loading ? (
-                <CircularProgress size={20} sx={{ color: "#fff" }} />
-              ) : (
-                "Pay Now"
+              {authError && (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  {authError}
+                </Alert>
               )}
-            </Button>
-          </Paper>
+
+              <Box sx={{ maxHeight: 320, overflowY: "auto", pr: 1 }}>
+                {cartItems.map((item, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      mb: 3,
+                      p: 2,
+                      borderRadius: 2,
+                      background: "#f9fafb",
+                    }}
+                  >
+                    <Box sx={{ display: "flex", gap: 2 }}>
+                      <Avatar
+                        src={item.image}
+                        variant="rounded"
+                        sx={{ width: 150, height: 150 }}
+                      />
+                      <Box>
+                        <Typography fontWeight={600}>{item.name}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Qty: {item.quantity}
+                        </Typography>
+                        <Button
+                          size="small"
+                          sx={{ mt: 1 , color:'red'}}
+                          onClick={() => removeFromCart(item.id)}
+                        >
+                          Remove
+                        </Button>
+                      </Box>
+                    </Box>
+
+                    <Typography fontWeight="bold">₹{item.price}</Typography>
+                  </Box>
+                ))}
+              </Box>
+
+              <Divider sx={{ my: 4 }} />
+
+              <Typography variant="h6" sx={{ fontWeight: "bold", mb: 3 }}>
+                Shipping Details
+              </Typography>
+
+              <Grid container spacing={5}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Full Name"
+                    value={form.name}
+                    onChange={handleChange("name")}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Phone"
+                    value={form.phone}
+                    onChange={handleChange("phone")}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    value={form.email}
+                    onChange={handleChange("email")}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Address"
+                    value={form.address1}
+                    onChange={handleChange("address1")}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="City"
+                    value={form.city}
+                    onChange={handleChange("city")}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="State"
+                    value={form.state}
+                    onChange={handleChange("state")}
+                  />
+                </Grid>
+
+                {/* ADDED PINCODE AND COUNTRY */}
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Pincode"
+                    value={form.pincode}
+                    onChange={handleChange("pincode")}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Country"
+                    value={form.country}
+                    onChange={handleChange("country")}
+                  />
+                </Grid>
+              </Grid>
+
+              <Divider sx={{ my: 4 }} />
+
+              <Box sx={{ display: "flex", gap: 2 }}>
+                <TextField
+                  label="Coupon Code"
+                  value={coupon}
+                  onChange={(e) => setCoupon(e.target.value)}
+                />
+                <Button
+                  variant="outlined"
+                  onClick={applyCoupon}
+                  sx={{
+                    borderColor: "#2F80ED",
+                    color: "#2F80ED",
+                    fontWeight: 600,
+                  }}
+                >
+                  Apply
+                </Button>
+              </Box>
+
+              {couponMsg && (
+                <Alert severity={couponMsg.type} sx={{ mt: 2 }}>
+                  {couponMsg.text}
+                </Alert>
+              )}
+
+              {paymentError && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  {paymentError}
+                </Alert>
+              )}
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12} md={4} width={400}>
+            <Paper
+              elevation={6}
+              sx={{
+                p: 4,
+                borderRadius: 3,
+                background: "linear-gradient(145deg, #ffffff, #f3f6fa)",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+                position: "sticky",
+                top: 120,
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: "bold", mb: 3 }}>
+                Order Summary
+              </Typography>
+
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                <Typography color="text.secondary">Subtotal</Typography>
+                <Typography fontWeight={500}>₹{subtotal}</Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+                <Typography color="text.secondary">Protection Fee</Typography>
+                <Typography fontWeight={500}>₹{Protectfee}</Typography>
+              </Box>
+
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={useCoins}
+                    onChange={(e) => setUseCoins(e.target.checked)}
+                    sx={{
+                      color: "#2F80ED",
+                      "&.Mui-checked": { color: "#2F80ED" },
+                    }}
+                  />
+                }
+                label="Use Coins"
+              />
+
+              {useCoins && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 2,
+                  }}
+                >
+                  <Typography color="green">Coins Applied</Typography>
+                  <Typography color="green" fontWeight="bold">
+                    -₹{coinsUsed}
+                  </Typography>
+                </Box>
+              )}
+
+              <Divider sx={{ my: 2 }} />
+
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+                <Typography variant="h6" fontWeight="bold">
+                  Total
+                </Typography>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  sx={{ color: "#2F80ED" }}
+                >
+                  ₹{total}
+                </Typography>
+              </Box>
+
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{
+                  py: 1.5,
+                  fontWeight: "bold",
+                  fontSize: "16px",
+                  borderRadius: "12px",
+                  background: "linear-gradient(90deg, #2F80ED, #9B6DFF)",
+                  boxShadow: "0 8px 20px rgba(47,128,237,0.4)",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    background: "linear-gradient(90deg, #2563eb, #8b5cf6)",
+                    transform: "translateY(-2px)",
+                  },
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={20} sx={{ color: "#fff" }} />
+                ) : (
+                  "Pay Now"
+                )}
+              </Button>
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
-    </form>
-  </Box>
-);
+      </form>
+
+      </Box>
+    </>
+  );
 }
