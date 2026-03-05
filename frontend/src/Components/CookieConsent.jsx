@@ -66,7 +66,7 @@ const CookieConsent = () => {
             variant="contained"
             onClick={handleAccept}
             sx={{
-              background: "linear-gradient(90deg,#2F80ED,#9B6DFF)", // same as your site buttons
+              background: "linear-gradient(90deg,#2F80ED,#9B6DFF)", 
               color: "#fff",
               fontWeight: "bold",
               px: 3,

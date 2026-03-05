@@ -49,6 +49,8 @@ function AppContent() {
 
   if (loading) return <LoadingPage />;
 
+  
+
   return (
     <>
       {!hideLayout && <Header />}
@@ -69,7 +71,7 @@ function AppContent() {
 
         <Route path="/order-success" element={<OrderSuccess />} />
 
-        <Route path="/product/:id" element={<ProductDetails />} />
+<Route path="/product/:param/:coupon?" element={<ProductDetails />} />
 
         <Route path="/" element={<Home />} />
 

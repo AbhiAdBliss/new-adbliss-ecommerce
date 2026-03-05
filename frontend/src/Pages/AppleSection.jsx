@@ -27,22 +27,101 @@ import Apple9 from "../assets/AppleS-imgs/Apple9.png";
 import bannerVideo from "../assets/Home-images/home-video1.mp4";
 import Footer from "../Components/Footer";
 
-
+const createSlug = (name) =>
+  name
+    .toLowerCase()
+    .replace(/[()]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 
 const products = [
-  { id: 1, brand: "Apple", name: "iPhone 17 (256GB Storage, Black)", image: Apple1, price: 199, features: ["256 GB ROM", "6.3 inch Super Retina XDR", "48MP Camera", "A19 Chip"] },
-  { id: 2, brand: "Apple", name: "iPhone Air (256GB Storage, Sky Blue)", image: Apple2, price: 139990, features: ["256 GB ROM", "6.7 inch OLED Display", "64MP Camera", "A18 Chip"] },
-  { id: 3, brand: "Apple", name: "Macbook Air M4 Chip", image: Apple3, price: 149, features: ["8GB RAM | 256GB SSD", "13.6 inch Retina", "M4 Chip", "18hr Battery"] },
-  { id: 4, brand: "Apple", name: "iPad 11th Gen 2025", image: Apple4, price: 49900, features: ["128 GB", "11 inch Display", "12MP Camera", "A16 Chip"] },
-  { id: 5, brand: "Apple", name: "Watch SE 3 GPS 44mm", image: Apple5, price: 99, features: ["44mm Display", "Heart Rate", "GPS", "Water Resistant"] },
-  { id: 6, brand: "Apple", name: "Apple TV 4K", image: Apple6, price: 19900, features: ["128 GB", "4K HDR", "Dolby Atmos", "A15 Chip"] },
-  { id: 7, brand: "Apple", name: "AirPods Pro 3", image: Apple7, price: 199, features: ["Noise Cancellation", "Spatial Audio", "MagSafe", "30hr Battery"] },
-  { id: 8, brand: "Apple", name: "iPhone 17 Pro", image: Apple8, price: 89900, features: ["256 GB", "OLED Display", "50MP Camera", "A19 Pro Chip"] },
-  { id: 9, brand: "Apple", name: "MagSafe Battery", image: Apple9, price: 149, features: ["5000mAh", "MagSafe", "Fast Charging", "Compact Design"] }
+  {
+    id: 1,
+    brand: "Apple",
+    name: "iPhone 17 (256GB Storage, Black)",
+    slug: "apple-iphone-17-256gb-storage-black",
+    image: Apple1,
+    price: 199,
+    features: ["256 GB ROM","6.3 inch Super Retina XDR","48MP Camera","A19 Chip"]
+  },
+  {
+    id: 2,
+    brand: "Apple",
+    name: "iPhone Air (256GB Storage, Sky Blue)",
+    slug: "apple-iphone-air-256gb-storage-sky-blue",
+    image: Apple2,
+    price: 139990,
+    features: ["256 GB ROM","6.7 inch OLED Display","64MP Camera","A18 Chip"]
+  },
+  {
+    id: 3,
+    brand: "Apple",
+    name: "Macbook Air M4 Chip",
+    slug: "apple-macbook-air-m4-chip",
+    image: Apple3,
+    price: 149,
+    features: ["8GB RAM | 256GB SSD","13.6 inch Retina","M4 Chip","18hr Battery"]
+  },
+  {
+    id: 4,
+    brand: "Apple",
+    name: "iPad 11th Gen 2025",
+    slug: "apple-ipad-11th-gen-2025",
+    image: Apple4,
+    price: 49900,
+    features: ["128 GB","11 inch Display","12MP Camera","A16 Chip"]
+  },
+  {
+    id: 5,
+    brand: "Apple",
+    name: "Watch SE 3 GPS 44mm",
+    slug: "apple-watch-se-3-gps-44mm",
+    image: Apple5,
+    price: 99,
+    features: ["44mm Display","Heart Rate","GPS","Water Resistant"]
+  },
+  {
+    id: 6,
+    brand: "Apple",
+    name: "Apple TV 4K",
+    slug: "apple-tv-4k",
+    image: Apple6,
+    price: 19900,
+    features: ["128 GB","4K HDR","Dolby Atmos","A15 Chip"]
+  },
+  {
+    id: 7,
+    brand: "Apple",
+    name: "AirPods Pro 3",
+    slug: "apple-airpods-pro-3",
+    image: Apple7,
+    price: 199,
+    features: ["Noise Cancellation","Spatial Audio","MagSafe","30hr Battery"]
+  },
+  {
+    id: 8,
+    brand: "Apple",
+    name: "iPhone 17 Pro",
+    slug: "apple-iphone-17-pro",
+    image: Apple8,
+    price: 89900,
+    features: ["256 GB","OLED Display","50MP Camera","A19 Pro Chip"]
+  },
+  {
+    id: 9,
+    brand: "Apple",
+    name: "MagSafe Battery",
+    slug: "apple-magsafe-battery",
+    image: Apple9,
+    price: 149,
+    features: ["5000mAh","MagSafe","Fast Charging","Compact Design"]
+  }
 ];
 
 export default function AppleSection() {
   const navigate = useNavigate();
+
+
 
   return (
     <Box sx={{ bgcolor: "#F5F7FA" }}>
@@ -79,7 +158,13 @@ export default function AppleSection() {
               return (
                 <Grid item key={item.id} xs={12} sm={6} lg={4} sx={{ display: "flex", justifyContent: "center" }}>
                  <Card
-  onClick={() => navigate(`/product/${item.id}`)}
+onClick={() =>
+  navigate(
+    hasCoupon
+      ? `/product/${item.id}/loyality-coupon`
+      : `/product/${createSlug(item.name)}`
+  )
+}
   sx={{
     borderRadius: 3,
     width: 420,

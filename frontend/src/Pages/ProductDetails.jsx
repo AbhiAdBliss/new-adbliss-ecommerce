@@ -31,22 +31,107 @@ import Apple7 from "../assets/AppleS-imgs/Apple7.png";
 import Apple8 from "../assets/AppleS-imgs/Apple8.png";
 import Apple9 from "../assets/AppleS-imgs/Apple9.png";
 
+const createSlug = (name) =>
+  name
+    .toLowerCase()
+    .replace(/[()]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
 const products = [
-  { id: 1, name: "Apple iPhone 17 (256GB Storage, Black)", image: Apple1, price: "199", features: ["256 GB ROM", "16.0 cm (6.3 inch) Super Retina XDR Display", "48MP + 48MP | 18MP Front Camera", "A19 Chip, 6 Core Processor", "1 Year Apple Warranty"] },
-  { id: 2, name: "Apple iPhone Air (256GB Storage, Sky Blue)", image: Apple2, price: "69,900", features: ["256 GB ROM", "6.7 inch OLED Display", "64MP Camera", "A18 Chip", "1 Year Warranty"] },
-  { id: 3, name: "Apple Macbook Air M4 Chip", image: Apple3, price: "149", features: ["8GB RAM | 256GB SSD", "13.6 inch Retina Display", "M4 Chip Processor", "18 Hours Battery", "1 Year Warranty"] },
-  { id: 4, name: "Apple iPad 11th Gen 2025", image: Apple4, price: "49,900", features: ["128 GB ROM", "11 inch Display", "12MP Camera", "A16 Chip", "1 Year Warranty"] },
-  { id: 5, name: "Apple Watch SE 3 GPS 44mm", image: Apple5, price: "99", features: ["44mm Display", "Heart Rate Monitor", "GPS Enabled", "Water Resistant", "1 Year Warranty"] },
-  { id: 6, name: "Apple TV 4K", image: Apple6, price: "19,900", features: ["128 GB Storage", "4K HDR", "Dolby Atmos", "A15 Chip", "1 Year Warranty"] },
-  { id: 7, name: "Apple AirPods Pro 3", image: Apple7, price: "199", features: ["Active Noise Cancellation", "Spatial Audio", "MagSafe Charging", "30 Hours Battery", "1 Year Warranty"] },
-  { id: 8, name: "Apple iPhone 17 Pro", image: Apple8, price: "89,900", features: ["256 GB ROM", "OLED Display", "50MP Camera", "A19 Pro Chip", "1 Year Warranty"] },
-  { id: 9, name: "MagSafe Battery Pack", image: Apple9, price: "149", features: ["5000mAh Battery", "MagSafe Compatible", "Fast Charging", "Compact Design", "1 Year Warranty"] },
+  {
+    id: 1,
+    brand: "Apple",
+    name: "iPhone 17 (256GB Storage, Black)",
+    slug: "apple-iphone-17-256gb-storage-black",
+    image: Apple1,
+    price: 199,
+    features: ["256 GB ROM","6.3 inch Super Retina XDR","48MP Camera","A19 Chip"]
+  },
+  {
+    id: 2,
+    brand: "Apple",
+    name: "iPhone Air (256GB Storage, Sky Blue)",
+    slug: "apple-iphone-air-256gb-storage-sky-blue",
+    image: Apple2,
+    price: 139990,
+    features: ["256 GB ROM","6.7 inch OLED Display","64MP Camera","A18 Chip"]
+  },
+  {
+    id: 3,
+    brand: "Apple",
+    name: "Macbook Air M4 Chip",
+    slug: "apple-macbook-air-m4-chip",
+    image: Apple3,
+    price: 149,
+    features: ["8GB RAM | 256GB SSD","13.6 inch Retina","M4 Chip","18hr Battery"]
+  },
+  {
+    id: 4,
+    brand: "Apple",
+    name: "iPad 11th Gen 2025",
+    slug: "apple-ipad-11th-gen-2025",
+    image: Apple4,
+    price: 49900,
+    features: ["128 GB","11 inch Display","12MP Camera","A16 Chip"]
+  },
+  {
+    id: 5,
+    brand: "Apple",
+    name: "Watch SE 3 GPS 44mm",
+    slug: "apple-watch-se-3-gps-44mm",
+    image: Apple5,
+    price: 99,
+    features: ["44mm Display","Heart Rate","GPS","Water Resistant"]
+  },
+  {
+    id: 6,
+    brand: "Apple",
+    name: "Apple TV 4K",
+    slug: "apple-tv-4k",
+    image: Apple6,
+    price: 19900,
+    features: ["128 GB","4K HDR","Dolby Atmos","A15 Chip"]
+  },
+  {
+    id: 7,
+    brand: "Apple",
+    name: "AirPods Pro 3",
+    slug: "apple-airpods-pro-3",
+    image: Apple7,
+    price: 199,
+    features: ["Noise Cancellation","Spatial Audio","MagSafe","30hr Battery"]
+  },
+  {
+    id: 8,
+    brand: "Apple",
+    name: "iPhone 17 Pro",
+    slug: "apple-iphone-17-pro",
+    image: Apple8,
+    price: 89900,
+    features: ["256 GB","OLED Display","50MP Camera","A19 Pro Chip"]
+  },
+  {
+    id: 9,
+    brand: "Apple",
+    name: "MagSafe Battery",
+    slug: "apple-magsafe-battery",
+    image: Apple9,
+    price: 149,
+    features: ["5000mAh","MagSafe","Fast Charging","Compact Design"]
+  }
 ];
 
 export default function ProductDetails() {
-  const { id } = useParams();
+
   const navigate = useNavigate();
-  const product = products.find((p) => p.id === Number(id));
+
+const { param } = useParams();
+
+const product =
+  products.find((p) => p.id === Number(param)) ||
+  products.find((p) => createSlug(p.name) === param);
+
   const { addToCart } = useCart();
 
   const isLoggedIn = localStorage.getItem("user");
