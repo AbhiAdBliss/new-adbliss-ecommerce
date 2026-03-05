@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 
 import Header from "./Components/Header";
+import Footer from "./Components/Footer"; // Assuming you have a Footer component
 import ScrollToTop from "./Components/ScrollToTop";
+import CookieConsent from "./Components/CookieConsent"; // ✅ Added Import
 
 import Hero from "./Pages/Hero";
 import HomePage from "./Pages/HomePage";
@@ -15,7 +17,7 @@ import OrderSuccess from "./Pages/OrderSuccess";
 import ForgotPassword from "./Pages/ForgotPassword";
 import Profile from "./Profile/Profile";
 import Orders from "./Profile/Orders";
-import Security from "./Profile/Security";   // ✅ FIXED IMPORT
+import Security from "./Profile/Security";   
 
 import ProtectedRoute from "./Components/ProtectedRoute";
 import SpaceLogin from "./Pages/Login";
@@ -34,7 +36,8 @@ function AppContent() {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
 
-  const hideHeader = location.pathname === "/order-success";
+  // Define pages where header/footer should be hidden
+  const hideLayout = location.pathname === "/order-success";
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -42,13 +45,13 @@ function AppContent() {
     }, 700);
 
     return () => clearTimeout(timer);
-  }, [location]);
+  }, [location.pathname]); // Triggered on path change
 
   if (loading) return <LoadingPage />;
 
   return (
     <>
-      {!hideHeader && <Header />}
+      {!hideLayout && <Header />}
       <ScrollToTop />
 
       <Routes>
@@ -120,9 +123,14 @@ function AppContent() {
         {/* ================= 404 ================= */}
         <Route
           path="*"
-          element={<h2 style={{ textAlign: "center" }}>404 Page Not Found</h2>}
+          element={<h2 style={{ textAlign: "center", marginTop: "100px" }}>404 Page Not Found</h2>}
         />
       </Routes>
+
+      {!hideLayout && <Footer />}
+
+      {/* ✅ GLOBALLY ACCESSIBLE COOKIE BANNER */}
+      <CookieConsent />
     </>
   );
 }

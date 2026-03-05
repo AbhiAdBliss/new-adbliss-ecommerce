@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -13,7 +13,7 @@ import {
   Divider,
   Chip,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
 } from "@mui/material";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -26,14 +26,28 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
-  
-  // Responsive check for small screens
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [cartOpen, setCartOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
 
   const { cartItems } = useCart();
+
+  /* ================= SCROLL LOGIC ================= */
+  useEffect(() => {
+    const handleScroll = () => {
+      // If user scrolls more than 50px, change state
+      if (window.scrollY > 50) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   /* ================= USER LOGIC ================= */
   const userFromState = location.state?.user;
@@ -51,10 +65,11 @@ const Header = () => {
     }
   }
 
-  /* ================= HIDE HEADER PAGES ================= */
-  const hideHeader =
-    location.pathname === "/login" ||
-    location.pathname === "/register";
+  /* ================= PAGE LOGIC ================= */
+  const hideHeader = location.pathname === "/login" || location.pathname === "/register";
+  
+  // Define pages where header should start transparent (Home and Apple page)
+  const isTransparentPage = location.pathname === "/" || location.pathname === "/apple";
 
   /* ================= LOGOUT ================= */
   const handleLogout = () => {
@@ -69,16 +84,20 @@ const Header = () => {
     <>
       <AppBar
         position="fixed"
-        elevation={4}
+        // Elevation 0 when transparent, 4 when scrolled
+        elevation={isTransparentPage ? (scrolled ? 4 : 0) : 4}
         sx={{
-          bgcolor: "#121212",
-          backdropFilter: "blur(6px)",
+          // Color logic: Transparent if on specific pages and not scrolled, otherwise solid Black
+          bgcolor: isTransparentPage 
+            ? (scrolled ? "#121212" : "transparent") 
+            : "#121212",
+          backdropFilter: scrolled ? "blur(6px)" : "none",
+          transition: "all 0.3s ease-in-out",
           height: { xs: 70, md: 80 },
-          justifyContent: "center"
+          justifyContent: "center",
         }}
       >
         <Toolbar sx={{ justifyContent: "space-between", px: { xs: 1.5, sm: 3 } }}>
-
           {/* LOGO */}
           <Typography
             component={Link}
@@ -89,17 +108,16 @@ const Header = () => {
               component="img"
               src={logo}
               alt="Shopnbliss"
-              sx={{ 
-                height: { xs: 50, sm: 70, md: 85 }, 
-                transition: "height 0.3s ease" 
+              sx={{
+                height: { xs: 50, sm: 70, md: 85 },
+                transition: "height 0.3s ease",
               }}
             />
           </Typography>
 
           {/* RIGHT SIDE SECTION */}
           <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 2 } }}>
-
-            {/* COINS - Always visible & Responsive */}
+            {/* COINS */}
             {user && (
               <Chip
                 label={user?.coins || 0}
@@ -115,7 +133,7 @@ const Header = () => {
                         width: "100%",
                         height: "100%",
                         objectFit: "cover",
-                        borderRadius: "50%"
+                        borderRadius: "50%",
                       }}
                     />
                   </Box>
@@ -126,7 +144,7 @@ const Header = () => {
                   fontWeight: "bold",
                   height: { xs: 30, sm: 34 },
                   fontSize: { xs: "0.8rem", sm: "0.9rem" },
-                  "& .MuiChip-label": { px: { xs: 1, sm: 1.5 } }
+                  "& .MuiChip-label": { px: { xs: 1, sm: 1.5 } },
                 }}
               />
             )}
@@ -138,21 +156,23 @@ const Header = () => {
               </Badge>
             </IconButton>
 
-            {/* USER AVATAR (NO NAME IN HEADER) */}
+            {/* USER AVATAR */}
             {user ? (
               <>
-                <IconButton 
-                  onClick={(e) => setAnchorEl(e.currentTarget)} 
+                <IconButton
+                  onClick={(e) => setAnchorEl(e.currentTarget)}
                   sx={{ p: 0.5 }}
                 >
-                  <Avatar sx={{ 
-                    bgcolor: "#fff", 
-                    color: "#000", 
-                    width: { xs: 34, sm: 40 }, 
-                    height: { xs: 34, sm: 40 },
-                    fontWeight: 'bold',
-                    fontSize: { xs: "0.9rem", sm: "1.1rem" }
-                  }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: "#fff",
+                      color: "#000",
+                      width: { xs: 34, sm: 40 },
+                      height: { xs: 34, sm: 40 },
+                      fontWeight: "bold",
+                      fontSize: { xs: "0.9rem", sm: "1.1rem" },
+                    }}
+                  >
                     {user?.name?.charAt(0)?.toUpperCase() || "U"}
                   </Avatar>
                 </IconButton>
@@ -162,12 +182,11 @@ const Header = () => {
                   open={Boolean(anchorEl)}
                   onClose={() => setAnchorEl(null)}
                   PaperProps={{
-                    sx: { mt: 1.5, minWidth: 180, borderRadius: 2 }
+                    sx: { mt: 1.5, minWidth: 180, borderRadius: 2 },
                   }}
-                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                  transformOrigin={{ horizontal: "right", vertical: "top" }}
+                  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                 >
-                  {/* Name and Email shown here instead of the header */}
                   <Box sx={{ px: 2, py: 1.5 }}>
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>
                       {user?.name}
@@ -176,9 +195,7 @@ const Header = () => {
                       {user?.email}
                     </Typography>
                   </Box>
-                  
                   <Divider />
-
                   <MenuItem onClick={() => { navigate("/profile"); setAnchorEl(null); }}>
                     👤 My Profile
                   </MenuItem>
@@ -186,17 +203,16 @@ const Header = () => {
                     📦 My Orders
                   </MenuItem>
                   <Divider />
-                  <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
+                  <MenuItem onClick={handleLogout} sx={{ color: "error.main" }}>
                     🚪 Logout
                   </MenuItem>
                 </Menu>
               </>
             ) : (
-              /* GUEST LOGIN/REGISTER */
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <Box sx={{ display: "flex", gap: 1 }}>
                 <Button
                   onClick={() => navigate("/login", { state: { from: location.pathname } })}
-                  sx={{ color: "#fff", textTransform: 'none' }}
+                  sx={{ color: "#fff", textTransform: "none" }}
                 >
                   Login
                 </Button>
@@ -208,8 +224,8 @@ const Header = () => {
                     sx={{
                       color: "#fff",
                       borderColor: "#fff",
-                      textTransform: 'none',
-                      ":hover": { bgcolor: "#fff", color: "#000" }
+                      textTransform: "none",
+                      ":hover": { bgcolor: "#fff", color: "#000" },
                     }}
                   >
                     Register
@@ -221,8 +237,10 @@ const Header = () => {
         </Toolbar>
       </AppBar>
 
-      {/* FIXED SPACER */}
-      <Box sx={{ height: { xs: 70, md: 80 } }} />
+      {/* FIXED SPACER: Only show if header is NOT transparent or if scrolled */}
+      {(!isTransparentPage || scrolled) && (
+        <Box sx={{ height: { xs: 70, md: 80 } }} />
+      )}
 
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </>
