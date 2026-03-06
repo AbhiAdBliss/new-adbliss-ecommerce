@@ -259,7 +259,7 @@ onClick={() =>
           </Grid>
         </Container>
       </Box>
-      <Footer />
+      
     </Box>
   );
 }

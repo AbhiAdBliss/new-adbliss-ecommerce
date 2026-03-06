@@ -462,7 +462,7 @@ background: "linear-gradient(90deg, #767476ff, #757276ff, #a3a1a3ff)",
 
 
 
-      <Footer />
+      {/* <Footer /> */}
 
       {/* ✨ Animations */}
       <style>

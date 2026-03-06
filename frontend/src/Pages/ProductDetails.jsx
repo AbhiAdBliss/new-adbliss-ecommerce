@@ -304,7 +304,7 @@ const product =
         </Alert>
       </Snackbar>
 
-      <Footer />
+      {/* <Footer /> */}
     </Box>
   );
 }
