@@ -16,10 +16,10 @@ export default function CartDrawer({ open, onClose }) {
   const { cartItems, removeFromCart, increaseQty, decreaseQty } = useCart();
   const navigate = useNavigate(); 
 
-  const total = cartItems.reduce(
-    (sum, item) => sum + Number(item.price.replace(/,/g, "")) * item.quantity,
-    0
-  );
+ const total = cartItems.reduce(
+  (sum, item) => sum + item.price * item.quantity,
+  0
+);
 
   return (
     <Drawer anchor="right" open={open} onClose={onClose}>
@@ -37,7 +37,7 @@ export default function CartDrawer({ open, onClose }) {
           cartItems.map((item) => (
             <Box key={item.id} sx={{ mb: 2 }}>
               <Typography fontWeight={600}>{item.name}</Typography>
-              <Typography>₹{item.price}</Typography>
+            <Typography>₹{item.price.toLocaleString("en-IN")}</Typography>
 
               <Box display="flex" alignItems="center" gap={1} mt={1}>
                 <Button size="small" onClick={() => decreaseQty(item.id)}>-</Button>

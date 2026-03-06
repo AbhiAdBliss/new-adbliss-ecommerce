@@ -31,12 +31,12 @@ import Apple7 from "../assets/AppleS-imgs/Apple7.png";
 import Apple8 from "../assets/AppleS-imgs/Apple8.png";
 import Apple9 from "../assets/AppleS-imgs/Apple9.png";
 
-const createSlug = (name) =>
-  name
-    .toLowerCase()
-    .replace(/[()]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+// const createSlug = (name) =>
+//   name
+//     .toLowerCase()
+//     .replace(/[()]/g, "")
+//     .replace(/[^a-z0-9]+/g, "-")
+//     .replace(/^-+|-+$/g, "");
 
 const products = [
   {
@@ -130,7 +130,7 @@ const { param } = useParams();
 
 const product =
   products.find((p) => p.id === Number(param)) ||
-  products.find((p) => createSlug(p.name) === param);
+  products.find((p) => p.slug === param);
 
   const { addToCart } = useCart();
 

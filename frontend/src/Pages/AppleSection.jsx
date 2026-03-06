@@ -27,12 +27,7 @@ import Apple9 from "../assets/AppleS-imgs/Apple9.png";
 import bannerVideo from "../assets/Home-images/home-video1.mp4";
 import Footer from "../Components/Footer";
 
-const createSlug = (name) =>
-  name
-    .toLowerCase()
-    .replace(/[()]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+
 
 const products = [
   {
@@ -159,11 +154,11 @@ export default function AppleSection() {
                 <Grid item key={item.id} xs={12} sm={6} lg={4} sx={{ display: "flex", justifyContent: "center" }}>
                  <Card
 onClick={() =>
-  navigate(
-    hasCoupon
-      ? `/product/${item.id}/loyality-coupon`
-      : `/product/${createSlug(item.name)}`
-  )
+ navigate(
+  hasCoupon
+    ? `/product/${item.id}/loyality-coupon`
+    : `/product/${item.slug}`
+)
 }
   sx={{
     borderRadius: 3,

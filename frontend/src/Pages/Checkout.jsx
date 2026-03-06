@@ -66,11 +66,14 @@ export default function Checkout() {
     }
   }, [cartItems, navigate]);
 
-  const subtotal = cartItems.reduce(
-    (sum, item) =>
-      sum + Number(item.price.replace(/,/g, "")) * item.quantity,
-    0
-  );
+ const subtotal = cartItems.reduce((sum, item) => {
+  const price =
+    typeof item.price === "string"
+      ? Number(item.price.replace(/,/g, ""))
+      : Number(item.price);
+
+  return sum + price * item.quantity;
+}, 0);
 
   const baseTotal = subtotal - discount + Protectfee;
   const coinsAvailable = savedUser?.coins || 0;
@@ -225,7 +228,7 @@ export default function Checkout() {
             "50%": { transform: "scale(1.15)" },
             "100%": { transform: "scale(1)" }
           },
-          pt: 14,
+          pt: 12,
           px: { xs: 2, md: 6 },
           pb: 6,
           minHeight: "100vh",
@@ -263,45 +266,56 @@ export default function Checkout() {
                 </Alert>
               )}
 
-              <Box sx={{ maxHeight: 320, overflowY: "auto", pr: 1 }}>
-                {cartItems.map((item, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      mb: 3,
-                      p: 2,
-                      borderRadius: 2,
-                      background: "#f9fafb",
-                    }}
-                  >
-                    <Box sx={{ display: "flex", gap: 2 }}>
-                      <Avatar
-                        src={item.image}
-                        variant="rounded"
-                        sx={{ width: 150, height: 150 }}
-                      />
-                      <Box>
-                        <Typography fontWeight={600}>{item.name}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Qty: {item.quantity}
-                        </Typography>
-                        <Button
-                          size="small"
-                          sx={{ mt: 1 , color:'red'}}
-                          onClick={() => removeFromCart(item.id)}
-                        >
-                          Remove
-                        </Button>
-                      </Box>
-                    </Box>
+         <Box sx={{ maxHeight: 320, overflowY: "auto", pr: 1 }}>
+  {cartItems.map((item, index) => {
+    const hasCoupon = item.id % 2 !== 0;
 
-                    <Typography fontWeight="bold">₹{item.price}</Typography>
-                  </Box>
-                ))}
-              </Box>
+    return (
+      <Box
+        key={index}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 3,
+          p: 2,
+          borderRadius: 2,
+
+          background: hasCoupon ? "#fdf7e3ff" : "#f9fafb",
+          border: hasCoupon ? "1px solid #f6c453" : "none",
+        }}
+      >
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Avatar
+            src={item.image}
+            variant="rounded"
+            sx={{ width: 150, height: 150 }}
+          />
+
+          <Box>
+            <Typography fontWeight={600}>{item.name}</Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              Qty: {item.quantity}
+            </Typography>
+
+            <Button
+              size="small"
+              sx={{ mt: 1, color: "red" }}
+              onClick={() => removeFromCart(item.id)}
+            >
+              Remove
+            </Button>
+          </Box>
+        </Box>
+
+        <Typography fontWeight="bold">
+          ₹{Number(item.price).toLocaleString("en-IN")}
+        </Typography>
+      </Box>
+    );
+  })}
+</Box>
 
               <Divider sx={{ my: 4 }} />
 
