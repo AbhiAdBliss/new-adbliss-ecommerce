@@ -97,102 +97,111 @@ export default function Checkout() {
     }
   };
 
-  const handleOrder = (e) => {
-    e.preventDefault();
+  const handleOrder = async (e) => {
+  e.preventDefault();
 
-    const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user"));
 
-    if (!user) {
-      setAuthError("⚠️ Please login or register to continue");
-      setTimeout(() => navigate("/login"), 1500);
-      return;
-    }
+  if (!user) {
+    setAuthError("⚠️ Please login or register to continue");
+    setTimeout(() => navigate("/login"), 1500);
+    return;
+  }
 
-    setLoading(true);
-    setPaymentError(null);
-    setAuthError("");
+  setLoading(true);
+  
+  // get razorpay key from backend
+const keyRes = await fetch("http://localhost:5001/api/get-razorpay-key");
+const keyData = await keyRes.json();
 
-    if (
-      !form.name ||
-      !form.phone ||
-      !form.email ||
-      !form.address1 ||
-      !form.city ||
-      !form.state ||
-      !form.pincode ||
-      !form.country
-    ) {
-      setPaymentError("Please fill all required fields");
-      setLoading(false);
-      return;
-    }
+  try {
 
-    if (!window.Razorpay) {
-      setPaymentError("Payment system not loaded");
-      setLoading(false);
-      return;
-    }
+    // 1️⃣ Create order from backend
+   const orderRes = await fetch("http://localhost:5001/api/create-payment", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    amount: total
+  })
+});
 
+const order = await orderRes.json();
+
+    // 2️⃣ Open Razorpay
     const rzp = new window.Razorpay({
-      key: "rzp_test_SD84DQrFfdGAmn",
-      amount: Math.round(total * 100),
-      currency: "INR",
-      name: "ShopnBliss",
-      description: "Order Payment",
+  key: keyData.key,
+  amount: order.amount,
+  currency: "INR",
+  order_id: order.id,
 
-      handler: async function () {
-        try {
-          const res = await fetch("/api/order", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              userId: user.id,
-              amount: total,
-              coinsUsed: coinsUsed,
-              address: form,
-            }),
-          });
+  name: "ShopnBliss",
+  description: "Order Payment",
 
-          const data = await res.json();
+      handler: async function (response) {
 
-          if (!res.ok) throw new Error(data.message || "Order failed");
+        await fetch("http://localhost:5001/api/verify-payment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            ...response,
+            userId: user.id,
+            amount: total
+          })
+        });
 
-          const updatedUser = {
-            ...user,
-            coins: data.coins,
-          };
+        const res = await fetch("/api/order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            amount: total,
+            coinsUsed: coinsUsed,
+            address: form
+          })
+        });
 
-          localStorage.setItem("user", JSON.stringify(updatedUser));
-          window.dispatchEvent(new Event("userUpdated"));
+        const data = await res.json();
 
-         clearCart();
+        const updatedUser = {
+          ...user,
+          coins: data.coins
+        };
 
-const orderId = "ORD" + Date.now(); // unique order id
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        window.dispatchEvent(new Event("userUpdated"));
 
-sessionStorage.setItem("orderSuccess", "true");
+        clearCart();
 
-navigate(`/order-success/${orderId}`);
+        const orderId = "ORD" + Date.now();
 
-        } catch (err) {
-          setPaymentError(err.message);
-        } finally {
-          setLoading(false);
-        }
+        sessionStorage.setItem("orderSuccess", "true");
+
+        navigate(`/order-success/${orderId}`);
       },
 
       prefill: {
         name: form.name,
         contact: form.phone,
-        email: form.email,
+        email: form.email
       },
 
-      theme: { color: "#2F80ED" },
+      theme: { color: "#2F80ED" }
     });
 
     rzp.open();
-  };
+
+  } catch (err) {
+    setPaymentError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <>
