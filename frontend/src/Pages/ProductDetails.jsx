@@ -45,7 +45,7 @@ const products = [
     name: "iPhone 17 (256GB Storage, Black)",
     slug: "apple-iphone-17-256gb-storage-black",
     image: Apple1,
-    price: 199,
+    price: 1,
     features: ["256 GB ROM","6.3 inch Super Retina XDR","48MP Camera","A19 Chip"]
   },
   {
@@ -128,33 +128,52 @@ export default function ProductDetails() {
 
 const { param } = useParams();
 
-const product =
-  products.find((p) => p.id === Number(param)) ||
-  products.find((p) => p.slug === param);
+const product = React.useMemo(() => {
+  return (
+    products.find((p) => p.id === Number(param)) ||
+    products.find((p) => p.slug === param)
+  );
+}, [param]);
 
   const { addToCart } = useCart();
 
-  const isLoggedIn = localStorage.getItem("user");
+ const user = JSON.parse(localStorage.getItem("user"));
+const isLoggedIn = !!user;
   const [openToast, setOpenToast] = React.useState(false);
+const [toastMsg, setToastMsg] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
-  if (!product) return <Typography sx={{ mt: 10, textAlign: 'center' }}>Product not found</Typography>;
+ if (!product) {
+  return (
+    <Box sx={{ textAlign: "center", mt: 10 }}>
+      <Typography variant="h5">Product not found</Typography>
+      <Button sx={{ mt: 2 }} onClick={() => navigate("/")}>
+        Go Home
+      </Button>
+    </Box>
+  );
+}
 
   // MATCHING LOGIC: If Product ID is 1, 3, 5... (Odd), show Coupon. 
   // This matches Index 0, 2, 4... in your AppleSection.
   const hasCoupon = product.id % 2 !== 0;
 
-  const handleAddToCart = () => {
-    if (!isLoggedIn) {
+ const handleAddToCart = () => {
+  if (!isLoggedIn) {
+    setToastMsg("🔐 Please login or register first");
+    setOpenToast(true);
+  } else {
+    setLoading(true);
+
+    setTimeout(() => {
+      addToCart(product);
+      setLoading(false);
+
+      setToastMsg("🛒 Item added to cart");
       setOpenToast(true);
-    } else {
-      setLoading(true);
-      setTimeout(() => {
-        addToCart(product);
-        navigate("/cart");
-      }, 700);
-    }
-  };
+    }, 700);
+  }
+};
 
   const handleBuyNow = () => {
     if (!isLoggedIn) {
@@ -162,8 +181,9 @@ const product =
     } else {
       setLoading(true);
       setTimeout(() => {
-        addToCart(product);
-        navigate("/checkout");
+        if (!product) return;
+addToCart(product);
+navigate("/checkout");
       }, 700);
     }
   };
@@ -227,9 +247,10 @@ const product =
               )}
 
               <Box
-                component="img"
-                src={product?.image}
-                alt={product?.name}
+                 component="img"
+  loading="lazy"
+  src={product?.image}
+  alt={product?.name}
                 sx={{ width: "100%", maxWidth: 360, objectFit: "contain" }}
               />
             </Paper>
@@ -259,7 +280,9 @@ const product =
                     : "Premium Apple product with guaranteed performance."}
                 </Typography>
                 
-                <Typography variant="h4" sx={{ mt: 2, fontWeight: 900 }}>₹{product.price}</Typography>
+           <Typography variant="h4" sx={{ mt: 2, fontWeight: 900 }}>
+  ₹{product.price.toLocaleString("en-IN")}
+</Typography>
                 
                 <Divider sx={{ my: 2 }} />
 
@@ -298,11 +321,28 @@ const product =
         </Grid>
       </Box>
 
-      <Snackbar open={openToast} autoHideDuration={3000} onClose={() => setOpenToast(false)} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
-        <Alert onClose={() => setOpenToast(false)} severity="warning" variant="filled" sx={{ width: "100%", borderRadius: 3 ,bgcolor:'#0a0a0aff' }}>
-          🔐 Please login or register first to continue
-        </Alert>
-      </Snackbar>
+     <Snackbar
+  open={openToast}
+  autoHideDuration={3000}
+  onClose={() => setOpenToast(false)}
+  anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+>
+ <Alert
+  onClose={() => setOpenToast(false)}
+  severity="success"
+  variant="filled"
+  sx={{
+    width: "100%",
+    borderRadius: 3,
+    bgcolor: "#1E3A8A",
+    color: "#fff",
+    fontWeight: 500,
+    boxShadow: "0 6px 18px rgba(0,0,0,0.2)"
+  }}
+>
+  {toastMsg}
+</Alert>
+</Snackbar>
 
       {/* <Footer /> */}
     </Box>

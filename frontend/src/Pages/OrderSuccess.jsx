@@ -1,9 +1,25 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, Typography, Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useParams } from "react-router-dom";
+
 
 export default function OrderSuccess() {
   const navigate = useNavigate();
+  const { orderId } = useParams();
+
+  useEffect(() => {
+    const orderPlaced = sessionStorage.getItem("orderSuccess");
+    const user = localStorage.getItem("user");
+
+    // ❌ If no order or no login → redirect
+    if (!orderPlaced || !user) {
+      navigate("/");
+    }
+
+    // remove flag after showing page once
+    sessionStorage.removeItem("orderSuccess");
+
+  }, [navigate]);
 
   return (
     <Box
@@ -12,16 +28,14 @@ export default function OrderSuccess() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background:
-          "linear-gradient(135deg, #121212 0%, #1E1E2F 50%, #2A1B3D 100%)",
+        background: "white",
       }}
     >
-      {/* 🔥 Glass Card */}
       <Box
         sx={{
           p: 5,
           borderRadius: 4,
-          background: "rgba(255,255,255,0.05)",
+          background: "#2b2f45ff",
           backdropFilter: "blur(10px)",
           border: "1px solid rgba(255,255,255,0.1)",
           textAlign: "center",
@@ -29,10 +43,8 @@ export default function OrderSuccess() {
           width: { xs: "90%", sm: "400px" },
         }}
       >
-        {/* ✅ Success Icon */}
         <Typography sx={{ fontSize: 50 }}>🎉</Typography>
 
-        {/* ✅ Title */}
         <Typography
           variant="h4"
           fontWeight="bold"
@@ -41,12 +53,13 @@ export default function OrderSuccess() {
           Order Successful!
         </Typography>
 
-        {/* ✅ Subtitle */}
         <Typography sx={{ mt: 2, fontSize: "16px", color: "#ccc" }}>
           Your order has been placed successfully 💰
         </Typography>
+        <Typography sx={{ mt: 1, color: "#ccc" }}>
+  Order ID: {orderId}
+</Typography>
 
-        {/* ✅ Button */}
         <Button
           variant="contained"
           size="medium"

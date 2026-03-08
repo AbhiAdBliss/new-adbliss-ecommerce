@@ -4,6 +4,7 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import YouTubeIcon from "@mui/icons-material/YouTube";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -33,14 +34,30 @@ const Footer = () => {
           </Grid>
 
           {/* QUICK LINKS */}
-          <Grid item xs={6} sm={6} md={2}>
-            <Typography fontWeight="bold" gutterBottom>Shop</Typography>
-            {["Mobiles", "Laptops", "Accessories", "Speakers", "Wearables"].map((item) => (
-              <Typography key={item} variant="body2" sx={{ color: "#bbb", mb: 1, cursor: "pointer", "&:hover": { color: "#fff" } }}>
-                {item}
-              </Typography>
-            ))}
-          </Grid>
+        <Grid item xs={6} sm={6} md={2}>
+  <Typography fontWeight="bold" gutterBottom>
+    Shop
+  </Typography>
+
+  {["Mobiles", "Laptops", "Accessories", "Speakers", "Wearables"].map((item) => (
+    <Typography
+      key={item}
+      component={Link}
+      to="/apple"
+      variant="body2"
+      sx={{
+        color: "#bbb",
+        mb: 1,
+        display: "block",
+        textDecoration: "none",
+        cursor: "pointer",
+        "&:hover": { color: "#fff" }
+      }}
+    >
+      {item}
+    </Typography>
+  ))}
+</Grid>
 
           {/* SUPPORT */}
           <Grid item xs={6} sm={6} md={2}>

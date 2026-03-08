@@ -23,15 +23,15 @@ export default function Checkout() {
   const { cartItems, clearCart, removeFromCart } = useCart();
   const navigate = useNavigate();
 
-  const savedUser = (() => {
-    try {
-      return JSON.parse(localStorage.getItem("user"));
-    } catch {
-      return null;
-    }
-  })();
+ const savedUser = React.useMemo(() => {
+  try {
+    return JSON.parse(localStorage.getItem("user"));
+  } catch {
+    return null;
+  }
+}, []);
 
-  const Protectfee = 150;
+  const Protectfee = 0;
 
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
@@ -81,7 +81,7 @@ export default function Checkout() {
   const total = baseTotal - coinsUsed;
 
   const applyCoupon = () => {
-    if (coupon.toUpperCase() === "SAVE10") {
+    if (coupon.trim().toUpperCase() === "SAVE10"){
       const disc = Math.round(subtotal * 0.1);
       setDiscount(disc);
       setCouponMsg({
@@ -135,7 +135,7 @@ export default function Checkout() {
 
     const rzp = new window.Razorpay({
       key: "rzp_test_SD84DQrFfdGAmn",
-      amount: total * 100,
+      amount: Math.round(total * 100),
       currency: "INR",
       name: "ShopnBliss",
       description: "Order Payment",
@@ -167,8 +167,13 @@ export default function Checkout() {
           localStorage.setItem("user", JSON.stringify(updatedUser));
           window.dispatchEvent(new Event("userUpdated"));
 
-          clearCart();
-          navigate("/order-success");
+         clearCart();
+
+const orderId = "ORD" + Date.now(); // unique order id
+
+sessionStorage.setItem("orderSuccess", "true");
+
+navigate(`/order-success/${orderId}`);
 
         } catch (err) {
           setPaymentError(err.message);
@@ -228,7 +233,7 @@ export default function Checkout() {
             "50%": { transform: "scale(1.15)" },
             "100%": { transform: "scale(1)" }
           },
-          pt: 12,
+          pt: 10,
           px: { xs: 2, md: 6 },
           pb: 6,
           minHeight: "100vh",
@@ -451,12 +456,12 @@ export default function Checkout() {
 
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
                 <Typography color="text.secondary">Subtotal</Typography>
-                <Typography fontWeight={500}>₹{subtotal}</Typography>
+                <Typography fontWeight={500}>₹{subtotal.toLocaleString("en-IN")}</Typography>
               </Box>
 
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
                 <Typography color="text.secondary">Protection Fee</Typography>
-                <Typography fontWeight={500}>₹{Protectfee}</Typography>
+                <Typography fontWeight={500}>₹{Protectfee.toLocaleString("en-IN")}</Typography>
               </Box>
 
               <FormControlLabel
@@ -483,7 +488,7 @@ export default function Checkout() {
                 >
                   <Typography color="green">Coins Applied</Typography>
                   <Typography color="green" fontWeight="bold">
-                    -₹{coinsUsed}
+                    -₹{coinsUsed.toLocaleString("en-IN")}
                   </Typography>
                 </Box>
               )}
@@ -499,7 +504,7 @@ export default function Checkout() {
                   fontWeight="bold"
                   sx={{ color: "#2F80ED" }}
                 >
-                  ₹{total}
+                 ₹{total.toLocaleString("en-IN")}
                 </Typography>
               </Box>
 

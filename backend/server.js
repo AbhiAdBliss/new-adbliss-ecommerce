@@ -4,6 +4,11 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
 
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
+
 const app = express();
 
 /* ================= PORT ================= */
@@ -23,7 +28,20 @@ app.use(
   })
 );
 
+/* ================= SECURITY ================= */
+
+app.use(helmet());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100
+});
+
+app.use(limiter);
+
 app.use(express.json());
+
+
 
 /* ================= MONGODB ================= */
 mongoose
@@ -36,6 +54,13 @@ mongoose
 
 /* ================= MODEL ================= */
 const User = require("./models/User");
+
+/* ================= RAZORPAY ================= */
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 /* ================= EMAIL UTILS ================= */
 const sendOtpEmail = require("./utils/sendOtpEmail");
@@ -129,10 +154,15 @@ app.post("/api/register", async (req, res) => {
     if (!name || !email || !phone || !password)
       return res.status(400).json({ message: "All fields required ❌" });
 
-    const existingUser = await User.findOne({ email });
+   const existingUser = await User.findOne({
+  $or: [{ email }, { phone }]
+});
 
-    if (existingUser)
-      return res.status(400).json({ message: "User already exists ❌" });
+if (existingUser) {
+  return res.status(400).json({
+    message: "Email or phone already registered"
+  });
+}
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -146,15 +176,15 @@ app.post("/api/register", async (req, res) => {
 
     console.log("User Saved ✅", newUser.email);
 
-    res.json({
-      user: {
-        id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-        phone: newUser.phone,
-        coins: newUser.coins,
-      },
-    });
+  res.json({
+  user: {
+    id: newUser._id,
+    name: newUser.name,
+    email: newUser.email,
+    phone: newUser.phone,
+    coins: newUser.coins
+  }
+});
 
   } catch (err) {
     console.error("Register Error:", err);
@@ -190,6 +220,99 @@ app.post("/api/login", async (req, res) => {
   } catch (err) {
     console.error("Login Error:", err);
     res.status(500).json({ message: "Login error ❌" });
+  }
+});
+
+/* ================= VERIFY PAYMENT ================= */
+
+app.post("/api/verify-payment", async (req, res) => {
+  try {
+
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      userId,
+      amount
+    } = req.body;
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(body)
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: "Payment verification failed ❌" });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found ❌" });
+    }
+
+    const coinsEarned = Math.floor(amount);
+
+    user.coins += coinsEarned;
+    await user.save();
+
+    await sendOrderEmail(user.email, {
+      name: user.name,
+      amount,
+      coinsEarned,
+      paymentId: razorpay_payment_id
+    });
+
+    res.json({
+      success: true,
+      coins: user.coins
+    });
+
+  } catch (err) {
+    console.error("Payment Verify Error:", err);
+    res.status(500).json({ message: "Verification error ❌" });
+  }
+});
+
+
+
+/* ================= VERIFY PAYMENT ================= */
+
+app.post("/api/verify-payment", async (req, res) => {
+  try {
+
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      userEmail,
+      amount
+    } = req.body;
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(body)
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: "Payment verification failed ❌" });
+    }
+
+    // SEND EMAIL WHEN PAYMENT SUCCESS
+    await sendOrderEmail(userEmail, {
+      amount,
+      paymentId: razorpay_payment_id
+    });
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("Payment Verify Error:", err);
+    res.status(500).json({ message: "Verification error ❌" });
   }
 });
 

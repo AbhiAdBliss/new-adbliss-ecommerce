@@ -36,7 +36,7 @@ const products = [
     name: "iPhone 17 (256GB Storage, Black)",
     slug: "apple-iphone-17-256gb-storage-black",
     image: Apple1,
-    price: 199,
+    price: 1,
     features: ["256 GB ROM","6.3 inch Super Retina XDR","48MP Camera","A19 Chip"]
   },
   {

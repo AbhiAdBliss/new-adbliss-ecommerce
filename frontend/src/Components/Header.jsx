@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import React, { useState, useEffect, memo } from "react";
 import {
   AppBar,
   Toolbar,
@@ -15,10 +17,13 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
+
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+
 import { useCart } from "../context/useCart";
 import CartDrawer from "../Components/CartDrawer";
+
 import coinVideo from "../assets/Home-images/Coins.mp4";
 import logo from "../assets/shopnbliss-logo.png";
 
@@ -32,49 +37,77 @@ const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [scrolled, setScrolled] = useState(false);
 
-  const { cartItems } = useCart();
+  /* ================= USER STATE ================= */
+  const [user, setUser] = useState(() => {
+    try {
+      const userFromState = location.state?.user;
+      if (userFromState) {
+        localStorage.setItem("user", JSON.stringify(userFromState));
+        return userFromState;
+      }
 
-  /* ================= SCROLL LOGIC ================= */
+      const stored = localStorage.getItem("user");
+      // Check for existence and that it's not the literal string "undefined"
+      if (stored && stored !== "undefined") {
+        return JSON.parse(stored);
+      }
+      return null;
+    } catch (err) {
+      console.error("Header User Init Error:", err);
+      return null;
+    }
+  });
+
+  const { cartItems } = useCart();
+  const cartCount = cartItems?.length || 0;
+
+  /* ================= LOGIN / LOGOUT SYNC ================= */
+  useEffect(() => {
+    const updateUser = (res) => {
+      try {
+        const stored = localStorage.getItem("user");
+        if (stored && stored !== "undefined") {
+          setUser(JSON.parse(stored));
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+  console.error("Server Error:", err);
+  return res.status(500).json({
+    message: "Something went wrong"
+  });
+      }
+    };
+
+    window.addEventListener("userUpdated", updateUser);
+    window.addEventListener("storage", updateUser); // Syncs across tabs
+    
+    return () => {
+      window.removeEventListener("userUpdated", updateUser);
+      window.removeEventListener("storage", updateUser);
+    };
+  }, []);
+
+  /* ================= SCROLL EFFECT ================= */
   useEffect(() => {
     const handleScroll = () => {
-      // If user scrolls more than 50px, change state
-      if (window.scrollY > 50) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      setScrolled(window.scrollY > 50);
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /* ================= USER LOGIC ================= */
-  const userFromState = location.state?.user;
-  let user = null;
-
-  if (userFromState) {
-    user = userFromState;
-    localStorage.setItem("user", JSON.stringify(userFromState));
-  } else {
-    try {
-      const stored = localStorage.getItem("user");
-      user = stored ? JSON.parse(stored) : null;
-    } catch {
-      user = null;
-    }
-  }
-
   /* ================= PAGE LOGIC ================= */
-  const hideHeader = location.pathname === "/login" || location.pathname === "/register";
-  
-  // Define pages where header should start transparent (Home and Apple page)
+  const hideHeader = ["/login", "/register"].includes(location.pathname);
   const isTransparentPage = location.pathname === "/" || location.pathname === "/apple";
 
   /* ================= LOGOUT ================= */
   const handleLogout = () => {
     localStorage.removeItem("user");
+    setUser(null);
     setAnchorEl(null);
+    window.dispatchEvent(new Event("userUpdated"));
     navigate("/");
   };
 
@@ -84,12 +117,10 @@ const Header = () => {
     <>
       <AppBar
         position="fixed"
-        // Elevation 0 when transparent, 4 when scrolled
         elevation={isTransparentPage ? (scrolled ? 4 : 0) : 4}
         sx={{
-          // Color logic: Transparent if on specific pages and not scrolled, otherwise solid Black
-          bgcolor: isTransparentPage 
-            ? (scrolled ? "#121212" : "transparent") 
+          bgcolor: isTransparentPage
+            ? scrolled ? "#121212" : "transparent"
             : "#121212",
           backdropFilter: scrolled ? "blur(6px)" : "none",
           transition: "all 0.3s ease-in-out",
@@ -102,6 +133,7 @@ const Header = () => {
           <Typography
             component={Link}
             to="/"
+            aria-label="Shopnbliss Home"
             sx={{ display: "flex", alignItems: "center", textDecoration: "none" }}
           >
             <Box
@@ -115,12 +147,12 @@ const Header = () => {
             />
           </Typography>
 
-          {/* RIGHT SIDE SECTION */}
+          {/* RIGHT SIDE */}
           <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 2 } }}>
             {/* COINS */}
             {user && (
               <Chip
-                label={user?.coins || 0}
+                label={user?.coins ?? 0}
                 avatar={
                   <Box sx={{ width: { xs: 20, sm: 24 }, height: { xs: 20, sm: 24 } }}>
                     <video
@@ -149,20 +181,17 @@ const Header = () => {
               />
             )}
 
-            {/* CART ICON */}
+            {/* CART */}
             <IconButton onClick={() => setCartOpen(true)} sx={{ color: "#fff" }}>
-              <Badge badgeContent={cartItems.length} color="error">
+              <Badge badgeContent={cartCount} color="error">
                 <ShoppingCartIcon sx={{ fontSize: { xs: 24, sm: 28 } }} />
               </Badge>
             </IconButton>
 
-            {/* USER AVATAR */}
+            {/* USER PROFILE / LOGIN */}
             {user ? (
               <>
-                <IconButton
-                  onClick={(e) => setAnchorEl(e.currentTarget)}
-                  sx={{ p: 0.5 }}
-                >
+                <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ p: 0.5 }}>
                   <Avatar
                     sx={{
                       bgcolor: "#fff",
@@ -170,10 +199,9 @@ const Header = () => {
                       width: { xs: 34, sm: 40 },
                       height: { xs: 34, sm: 40 },
                       fontWeight: "bold",
-                      fontSize: { xs: "0.9rem", sm: "1.1rem" },
                     }}
                   >
-                    {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                    {(user?.name?.[0] || user?.email?.[0] || "U").toUpperCase()}
                   </Avatar>
                 </IconButton>
 
@@ -181,17 +209,11 @@ const Header = () => {
                   anchorEl={anchorEl}
                   open={Boolean(anchorEl)}
                   onClose={() => setAnchorEl(null)}
-                  PaperProps={{
-                    sx: { mt: 1.5, minWidth: 180, borderRadius: 2 },
-                  }}
-                  transformOrigin={{ horizontal: "right", vertical: "top" }}
-                  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                  disableScrollLock={true}
                 >
                   <Box sx={{ px: 2, py: 1.5 }}>
-                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                      {user?.name}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                    <Typography fontWeight={600}>{user?.name || "User"}</Typography>
+                    <Typography variant="caption" color="text.secondary">
                       {user?.email}
                     </Typography>
                   </Box>
@@ -237,7 +259,7 @@ const Header = () => {
         </Toolbar>
       </AppBar>
 
-      {/* FIXED SPACER: Only show if header is NOT transparent or if scrolled */}
+      {/* HEADER SPACER */}
       {(!isTransparentPage || scrolled) && (
         <Box sx={{ height: { xs: 70, md: 80 } }} />
       )}
@@ -247,4 +269,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default memo(Header);

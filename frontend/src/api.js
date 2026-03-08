@@ -2,8 +2,18 @@ import axios from "axios";
 
 const API = axios.create({
   baseURL: import.meta.env.PROD
-    ? "/"                      // EC2 production (via Nginx)
-    : "http://localhost:5001", // Local development
+    ? "/"
+    : "http://localhost:5001",
+});
+
+API.interceptors.request.use((req) => {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    req.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return req;
 });
 
 export default API;

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import API from "../api";
 import {
   Box,
   TextField,
@@ -25,7 +25,7 @@ export default function ForgotPassword() {
     try {
       setError(""); setMessage("");
 
-      await axios.post("/api/forgot-password", { email });
+   await API.post("/api/forgot-password", { email });
 
       setMessage("OTP sent to your email ✅");
       setStep(2);
@@ -39,7 +39,7 @@ export default function ForgotPassword() {
     try {
       setError(""); setMessage("");
 
-      await axios.post("/api/verify-reset-otp", { email, otp });
+  await API.post("/api/verify-reset-otp", { email, otp });
 
       setMessage("OTP verified successfully ✅");
       setStep(3);
@@ -53,7 +53,7 @@ export default function ForgotPassword() {
     try {
       setError(""); setMessage("");
 
-      await axios.post("/api/reset-password", {
+     await API.post("/api/reset-password", {
         email,
         newPassword
       });

@@ -69,7 +69,7 @@ function AppContent() {
           }
         />
 
-        <Route path="/order-success" element={<OrderSuccess />} />
+      <Route path="/order-success/:orderId" element={<OrderSuccess />} />
 
 <Route path="/product/:param/:coupon?" element={<ProductDetails />} />
 

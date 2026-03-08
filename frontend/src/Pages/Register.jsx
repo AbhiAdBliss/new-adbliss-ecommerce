@@ -101,15 +101,18 @@ export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
 
       // 🔥 ✅ ADD THIS (IMPORTANT)
       localStorage.setItem("user", JSON.stringify(res.data.user));
+window.dispatchEvent(new Event("userUpdated"));
 
       setTimeout(() => {
         navigate("/apple", { state: { user: res.data.user } });
       }, 1200);
 
-    } catch (err) {
-      console.error(err); // 🔥 added for debugging
-      setServerError("Server error");
-    } finally {
+    }catch (err) {
+  console.error(err);
+  setServerError(
+    err.response?.data?.message || "Registration failed ❌"
+  );
+}finally {
 
       // 🔥 STOP LOADER
       setLoading(false);
