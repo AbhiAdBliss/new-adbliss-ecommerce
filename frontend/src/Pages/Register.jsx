@@ -14,9 +14,12 @@ import {
 } from "@mui/material";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import { Link, useNavigate } from "react-router-dom";
-// import { GoogleLogin } from "@react-oauth/google"; ❌ commented
+import InputAdornment from "@mui/material/InputAdornment";
+import IconButton from "@mui/material/IconButton";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
-export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
+export default function Register({ isEmbedded = false }) {
   const navigate = useNavigate();
 
   const [values, setValues] = useState({
@@ -24,39 +27,19 @@ export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
     email: "",
     phone: "",
     password: "",
-    // confirmPassword: "", ❌ commented
   });
 
   const [serverMessage, setServerMessage] = useState("");
   const [serverError, setServerError] = useState("");
 
-  // 🔥 ADDED LOADER STATE
+  const [showPassword, setShowPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   const handleChange = (field) => (e) => {
     setValues({ ...values, [field]: e.target.value });
   };
 
-  // ❌ GOOGLE LOGIN COMMENTED
-  /*
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      const res = await axios.post("/api/google-register", {
-        credential: credentialResponse.credential,
-      });
-
-      setServerMessage("Google Signup Successful 🎉");
-
-      setTimeout(() => {
-        navigate("/apple", { state: { user: res.data.user } });
-      }, 1000);
-    } catch {
-      setServerError("Google signup failed");
-    }
-  };
-  */
-
-  // ✅ VALIDATION
   const validate = () => {
     if (!values.name) return "Full Name is required";
     if (!/\S+@\S+\.\S+/.test(values.email)) return "Invalid Email";
@@ -66,13 +49,6 @@ export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
     return "";
   };
 
-  // ❌ OTP FUNCTIONS COMMENTED
-  /*
-  const sendOtp = async () => {};
-  const verifyOtp = async () => {};
-  */
-
-  // SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerError("");
@@ -86,7 +62,6 @@ export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
 
     try {
 
-      // 🔥 START LOADER
       setLoading(true);
 
       const res = await API.post("/api/register", {
@@ -94,34 +69,30 @@ export default function Register({ isEmbedded = false }) { // ✅ ADDED PROP
         email: values.email,
         phone: values.phone,
         password: values.password,
-        isVerified: true, // bypass OTP
+        isVerified: true,
       });
 
       setServerMessage("🎉 Registration Successful!");
 
-      // 🔥 ✅ ADD THIS (IMPORTANT)
       localStorage.setItem("user", JSON.stringify(res.data.user));
-window.dispatchEvent(new Event("userUpdated"));
+      window.dispatchEvent(new Event("userUpdated"));
 
       setTimeout(() => {
         navigate("/apple", { state: { user: res.data.user } });
       }, 1200);
 
-    }catch (err) {
-  console.error(err);
-  setServerError(
-    err.response?.data?.message || "Registration failed ❌"
-  );
-}finally {
-
-      // 🔥 STOP LOADER
+    } catch (err) {
+      console.error(err);
+      setServerError(
+        err.response?.data?.message || "Registration failed ❌"
+      );
+    } finally {
       setLoading(false);
     }
   };
 
   return (
     <>
-
       {/* 🔥 REGISTER PROCESSING LOADER */}
       <Backdrop
         open={loading}
@@ -134,13 +105,26 @@ window.dispatchEvent(new Event("userUpdated"));
         <Stack spacing={3} alignItems="center">
           <ShoppingBagIcon
             sx={{
-              fontSize: 60,
+              fontSize: {
+                xs: 40,
+                sm: 50,
+                md: 60,
+              },
               color: "#1976d2",
               animation: "pulse 1.5s infinite",
             }}
           />
 
-          <Typography variant="h5">
+          <Typography
+            variant="h5"
+            sx={{
+              fontSize: {
+                xs: "18px",
+                sm: "20px",
+                md: "24px",
+              },
+            }}
+          >
             Creating your account...
           </Typography>
 
@@ -159,16 +143,41 @@ window.dispatchEvent(new Event("userUpdated"));
             "50%": { transform: "scale(1.15)" },
             "100%": { transform: "scale(1)" }
           },
-          pt: 4,
-          background: "#f4f4f4",
-          pb: 10,
+
+          pt: { xs: 2, sm: 4 },
+          pb: { xs: 6, sm: 10 },
+          px: { xs: 2, sm: 0 },
+
+          background: "#d8d7d7ff",
           boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+
           minHeight: isEmbedded ? "auto" : "100vh",
         }}
       >
-        <Container maxWidth="sm">
-          <Paper sx={{ p: 3, borderRadius: 4 }}>
-            <Typography variant="h4" textAlign="center">
+        <Container
+          maxWidth="sm"
+          sx={{
+            mt: { xs: 3, sm: 6 },
+          }}
+        >
+          <Paper
+            sx={{
+              p: { xs: 3, sm: 4 },
+              borderRadius: 4,
+            }}
+          >
+            <Typography
+              variant="h4"
+              textAlign="center"
+              fontWeight={700}
+              sx={{
+                fontSize: {
+                  xs: "26px",
+                  sm: "30px",
+                  md: "34px",
+                },
+              }}
+            >
               Register
             </Typography>
 
@@ -177,23 +186,14 @@ window.dispatchEvent(new Event("userUpdated"));
                 {serverMessage}
               </Alert>
             )}
+
             {serverError && (
               <Alert severity="error" sx={{ mt: 2 }}>
                 {serverError}
               </Alert>
             )}
 
-            <Box component="form" onSubmit={handleSubmit}>
-              
-              {/* ❌ GOOGLE LOGIN COMMENTED */}
-              {/*
-              <Box sx={{ mt: 2, textAlign: "center" }}>
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={() => setServerError("Google login failed")}
-                />
-              </Box>
-              */}
+            <Box component="form" onSubmit={handleSubmit} mt={2}>
 
               <TextField
                 fullWidth
@@ -211,13 +211,6 @@ window.dispatchEvent(new Event("userUpdated"));
                 onChange={handleChange("email")}
               />
 
-              {/* ❌ OTP BUTTON COMMENTED */}
-              {/*
-              <Button onClick={sendOtp}>
-                Send OTP
-              </Button>
-              */}
-
               <TextField
                 fullWidth
                 label="Phone"
@@ -229,33 +222,43 @@ window.dispatchEvent(new Event("userUpdated"));
               <TextField
                 fullWidth
                 label="Password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 margin="normal"
                 value={values.password}
                 onChange={handleChange("password")}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
 
-              {/* ❌ CONFIRM PASSWORD COMMENTED */}
-              {/*
-              <TextField
-                fullWidth
-                label="Confirm Password"
-                type="password"
-                margin="normal"
-                value={values.confirmPassword}
-                onChange={handleChange("confirmPassword")}
-              />
-              */}
-
-              <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  mt: 3,
+                }}
+              >
                 <Button
                   type="submit"
                   variant="contained"
                   sx={{
-                    width: "150px",
+                    width: {
+                      xs: "100%",
+                      sm: "200px",
+                    },
                     borderRadius: "10px",
                     fontWeight: "bold",
                     bgcolor: "#100e0eff",
+                    py: 1.2,
                   }}
                 >
                   Register
@@ -263,9 +266,19 @@ window.dispatchEvent(new Event("userUpdated"));
               </Box>
             </Box>
 
-            <Typography mt={2} textAlign="center">
+            <Typography
+              mt={2}
+              textAlign="center"
+              sx={{
+                fontSize: {
+                  xs: "14px",
+                  sm: "15px",
+                },
+              }}
+            >
               Already have an account? <Link to="/login">Login</Link>
             </Typography>
+
           </Paper>
         </Container>
       </Box>

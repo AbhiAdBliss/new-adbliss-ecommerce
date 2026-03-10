@@ -239,7 +239,7 @@ const Profile = () => {
       </Container>
     </Box>
 
-<Footer/>
+
     </>
   );
 };

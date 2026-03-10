@@ -24,6 +24,8 @@ import SpaceLogin from "./Pages/Login";
 
 import LoadingPage from "./Loading/LoadingPage";
 import Addresses from "./Profile/Addresses";
+import LoyaltyCoupon from "./LoyaltyPages/LoyaltyCoupon";
+import LoyaltyCheckout from "./LoyaltyPages/LoyaltyCheckout";
 
 const Home = () => (
   <>
@@ -59,6 +61,8 @@ function AppContent() {
       <Routes>
         <Route path="/apple" element={<AppleSection />} />
 
+        
+
         {/* ================= CHECKOUT (PROTECTED) ================= */}
         <Route
           path="/checkout"
@@ -82,6 +86,11 @@ function AppContent() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         <Route path="/deal-promo/:id" element={<DealPromo />} />
+
+        <Route path="/loyalty-coupon" element={<LoyaltyCoupon/>} />
+
+        <Route path="/loyalty-checkout/:slug" element={<LoyaltyCheckout/>} />
+
 
         {/* ================= PROFILE (PROTECTED) ================= */}
         <Route

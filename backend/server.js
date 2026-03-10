@@ -18,7 +18,6 @@ const PORT = process.env.PORT || 5000;
 
 /* ================= MIDDLEWARE ================= */
 
-// ✅ CORS FIX (WORKS LOCAL + EC2)
 app.use(
   cors({
     origin: [
@@ -29,6 +28,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(helmet());
 
 /* ================= SECURITY ================= */
 
@@ -248,6 +249,9 @@ app.post("/api/create-payment", async (req, res) => {
     res.status(500).json({ message: "Payment order failed ❌" });
   }
 });
+
+
+
 /* ================= VERIFY PAYMENT ================= */
 
 app.post("/api/verify-payment", async (req, res) => {
@@ -269,19 +273,21 @@ app.post("/api/verify-payment", async (req, res) => {
       .digest("hex");
 
     if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({ message: "Payment verification failed ❌" });
-    }
+  return res.status(400).json({ message: "Payment verification failed ❌" });
+}
 
-    const user = await User.findById(userId);
+// ✅ ADD THIS CODE HERE
+const user = await User.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found ❌" });
-    }
+if (!user) {
+  return res.status(404).json({ message: "User not found ❌" });
+}
 
-    const coinsEarned = Math.floor(amount);
+const coinsEarned = Math.floor(amount);
 
-    user.coins += coinsEarned;
-    await user.save();
+user.coins += coinsEarned;
+
+await user.save();
 
     await sendOrderEmail(user.email, {
       name: user.name,
@@ -294,46 +300,6 @@ app.post("/api/verify-payment", async (req, res) => {
       success: true,
       coins: user.coins
     });
-
-  } catch (err) {
-    console.error("Payment Verify Error:", err);
-    res.status(500).json({ message: "Verification error ❌" });
-  }
-});
-
-
-
-/* ================= VERIFY PAYMENT ================= */
-
-app.post("/api/verify-payment", async (req, res) => {
-  try {
-
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      userEmail,
-      amount
-    } = req.body;
-
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
-
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(body)
-      .digest("hex");
-
-    if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({ message: "Payment verification failed ❌" });
-    }
-
-    // SEND EMAIL WHEN PAYMENT SUCCESS
-    await sendOrderEmail(userEmail, {
-      amount,
-      paymentId: razorpay_payment_id
-    });
-
-    res.json({ success: true });
 
   } catch (err) {
     console.error("Payment Verify Error:", err);
