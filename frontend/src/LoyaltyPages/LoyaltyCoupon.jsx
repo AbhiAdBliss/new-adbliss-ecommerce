@@ -174,7 +174,7 @@ export default function LoyaltyCoupon() {
       mt: 0.5,
       fontSize: "0.9rem",
       fontWeight: 600,
-      color: "#896d9eff"
+      color: "#f5a104ff"
     }}
   >
 Earn {item.price} Reward Coins on Purchase

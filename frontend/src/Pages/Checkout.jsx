@@ -170,12 +170,13 @@ export default function Checkout() {
             const res = await fetch("/api/order", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                userId: user.id,
-                amount: total,
-                coinsUsed: coinsUsed,
-                address: form,
-              }),
+             body: JSON.stringify({
+  userId: user.id,
+  amount: total,
+  coinsUsed: coinsUsed,
+  address: form,
+  items: cartItems
+}),
             });
 
             const data = await res.json();

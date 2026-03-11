@@ -30,22 +30,27 @@ const CategoriesSection = () => {
       <Container maxWidth="lg">
 
         {/* Header */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 4,
-            px: { xs: 1, md: 0 }
-          }}
-        >
-          <Typography
-            variant="h4"
-            sx={{ fontWeight: 700, color: "#222", fontSize: { xs: "1.6rem", md: "2.2rem" } }}
-          >
-            Categories
-          </Typography>
-        </Box>
+       <Box
+  sx={{
+    display: "flex",
+    justifyContent: { xs: "center", md: "space-between" },
+    alignItems: "center",
+    mb: 4,
+    px: { xs: 1, md: 0 }
+  }}
+>
+  <Typography
+    variant="h4"
+    sx={{
+      fontWeight: 700,
+      color: "#222",
+      fontSize: { xs: "1.6rem", sm: "1.8rem", md: "2.2rem" },
+      
+    }}
+  >
+    Categories
+  </Typography>
+</Box>
 
         {/* Categories Row */}
         <Box
@@ -78,12 +83,12 @@ const CategoriesSection = () => {
                 cursor: "pointer",
                 border: "1px solid #f0f0f0",
                 transition: "all 0.3s ease",
-                boxShadow: "0 10px 24px rgba(250, 237, 224, 1)",
-                  borderColor: "#6f420cff",
+                boxShadow: "0 10px 24px rgba(237, 244, 250, 1)",
+                  borderColor: "#c6d9f5ff",
                 "&:hover": {
                   transform: "translateY(1px)",
-                  boxShadow: "0 10px 24px rgba(223, 144, 70, 1)",
-                  borderColor: "#f2b876ff"
+                  boxShadow: "0 10px 24px rgba(179, 201, 249, 1)",
+                  borderColor: "#a2b0f6ff"
                 }
               }}
             >
@@ -123,7 +128,6 @@ const CategoriesSection = () => {
           ))}
         </Box>
 
-        <Divider sx={{ mt: { xs: 5, md: 7 }, borderColor: "#f2d6b6ff" }} />
 
       </Container>
     </Box>

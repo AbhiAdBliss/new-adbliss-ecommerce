@@ -27,10 +27,12 @@ import Addresses from "./Profile/Addresses";
 import LoyaltyCoupon from "./LoyaltyPages/LoyaltyCoupon";
 import LoyaltyCheckout from "./LoyaltyPages/LoyaltyCheckout";
 
+
 const Home = () => (
   <>
     <Hero />
     <HomePage />
+    
   </>
 );
 
@@ -39,7 +41,7 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
 
   // Define pages where header/footer should be hidden
-  const hideLayout = location.pathname === "/order-success";
+  const hideLayout = location.pathname.startsWith("/order-success");
 
   useEffect(() => {
     const timer = setTimeout(() => {

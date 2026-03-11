@@ -9,6 +9,11 @@ const rateLimit = require("express-rate-limit");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
+const Order = require("./models/Order");  
+
+
+
+
 const app = express();
 
 
@@ -33,7 +38,7 @@ app.use(helmet());
 
 /* ================= SECURITY ================= */
 
-app.use(helmet());
+
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -48,8 +53,10 @@ app.use(express.json());
 
 /* ================= MONGODB ================= */
 mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB Connected ✅"))
+  .connect(process.env.MONGO_URI, {
+    dbName: "adbliss-e-commerce"
+  })
+  .then(() => console.log("MongoDB Connected to adbliss-e-commerce ✅"))
   .catch((err) => {
     console.error("MongoDB Error ❌", err.message);
     process.exit(1);
@@ -170,12 +177,13 @@ if (existingUser) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({
-      name,
-      email,
-      phone,
-      password: hashedPassword,
-      coins: 0,
-    });
+  name,
+  email,
+  phone,
+  password: hashedPassword,
+  coins: 0,
+  isVerified: true
+});
 
     console.log("User Saved ✅", newUser.email);
 
@@ -252,17 +260,13 @@ app.post("/api/create-payment", async (req, res) => {
 
 
 
-/* ================= VERIFY PAYMENT ================= */
-
 app.post("/api/verify-payment", async (req, res) => {
   try {
 
     const {
       razorpay_order_id,
       razorpay_payment_id,
-      razorpay_signature,
-      userId,
-      amount
+      razorpay_signature
     } = req.body;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
@@ -273,32 +277,11 @@ app.post("/api/verify-payment", async (req, res) => {
       .digest("hex");
 
     if (expectedSignature !== razorpay_signature) {
-  return res.status(400).json({ message: "Payment verification failed ❌" });
-}
-
-// ✅ ADD THIS CODE HERE
-const user = await User.findById(userId);
-
-if (!user) {
-  return res.status(404).json({ message: "User not found ❌" });
-}
-
-const coinsEarned = Math.floor(amount);
-
-user.coins += coinsEarned;
-
-await user.save();
-
-    await sendOrderEmail(user.email, {
-      name: user.name,
-      amount,
-      coinsEarned,
-      paymentId: razorpay_payment_id
-    });
+      return res.status(400).json({ message: "Payment verification failed ❌" });
+    }
 
     res.json({
-      success: true,
-      coins: user.coins
+      success: true
     });
 
   } catch (err) {
@@ -310,14 +293,27 @@ await user.save();
 /* ================= ORDER ================= */
 app.post("/api/order", async (req, res) => {
   try {
-    const { userId, amount, coinsUsed = 0 } = req.body;
+
+   const { userId, amount, coinsUsed = 0, address, items } = req.body;
 
     const user = await User.findById(userId);
 
     if (!user)
       return res.status(404).json({ message: "User not found ❌" });
 
+    // Save order in MongoDB
+    const order = new Order({
+  userId,
+  amount,
+  coinsUsed,
+  address,
+  items
+});
+
+    await order.save();
+
     const coinsEarned = Math.floor(amount);
+
     const updatedCoins = Math.max(
       0,
       user.coins - coinsUsed + coinsEarned
@@ -325,14 +321,6 @@ app.post("/api/order", async (req, res) => {
 
     user.coins = updatedCoins;
     await user.save();
-
-    await sendOrderEmail(user.email, {
-      name: user.name,
-      amount,
-      coinsEarned,
-      coinsUsed,
-      totalCoins: updatedCoins,
-    });
 
     res.json({
       success: true,
