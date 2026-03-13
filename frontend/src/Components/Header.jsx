@@ -35,6 +35,7 @@ import InventoryOutlinedIcon from "@mui/icons-material/InventoryOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
+import UserMenu from "./Usermenu";
 
 import { Link, useNavigate, useLocation } from "react-router-dom";
 
@@ -62,9 +63,7 @@ const NAV_LINKS = [
 
 /* ─── Mock notifications ──────────────────────────────────────────────── */
 const NOTIFICATIONS = [
-  { id: 1, title: "Order Shipped! 🚀", desc: "Your iPhone 17 Pro is on its way.", time: "2 mins ago", unread: true },
-  { id: 2, title: "Flash Sale Today 🔥", desc: "Up to 15% off on AirPods Pro 3 — today only!", time: "1 hr ago", unread: true },
-  { id: 3, title: "Coins Credited 🪙", desc: "50 loyalty coins added to your account.", time: "Yesterday", unread: false },
+ 
 ];
 
 /* ─── Searchable products ─────────────────────────────────────────────── */
@@ -600,25 +599,12 @@ const Header = () => {
                   </Avatar>
                 </IconButton>
 
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={() => setAnchorEl(null)}
-                  disableScrollLock={true}
-                  PaperProps={{
-                    sx: { borderRadius: 3, minWidth: 200, boxShadow: "0 8px 24px rgba(0,0,0,0.1)", border: "1px solid #e5e7eb" },
-                  }}
-                >
-                  <Box sx={{ px: 2, py: 1.5 }}>
-                    <Typography fontWeight={600}>{user?.name || "User"}</Typography>
-                    <Typography variant="caption" color="text.secondary">{user?.email}</Typography>
-                  </Box>
-                  <Divider />
-                  <MenuItem onClick={() => { navigate("/profile"); setAnchorEl(null); }}>👤 My Profile</MenuItem>
-                  <MenuItem onClick={() => { navigate("/orders"); setAnchorEl(null); }}>📦 My Orders</MenuItem>
-                  <Divider />
-                  <MenuItem onClick={handleLogout} sx={{ color: "error.main" }}>🚪 Logout</MenuItem>
-                </Menu>
+               <UserMenu
+  anchorEl={anchorEl}
+  setAnchorEl={setAnchorEl}
+  user={user}
+  handleLogout={handleLogout}
+/>
               </>
             ) : (
               <Box sx={{ display: "flex", gap: 1 }}>

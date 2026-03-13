@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 
 import Header from "./Components/Header";
-import Footer from "./Components/Footer"; // Assuming you have a Footer component
+import Footer from "./Components/Footer";
 import ScrollToTop from "./Components/ScrollToTop";
-import CookieConsent from "./Components/CookieConsent"; // ✅ Added Import
+import CookieConsent from "./Components/CookieConsent";
 
 import Hero from "./Pages/Hero";
 import HomePage from "./Pages/HomePage";
@@ -17,7 +17,7 @@ import OrderSuccess from "./Pages/OrderSuccess";
 import ForgotPassword from "./Pages/ForgotPassword";
 import Profile from "./Profile/Profile";
 import Orders from "./Profile/Orders";
-import Security from "./Profile/Security";   
+import Security from "./Profile/Security";
 
 import ProtectedRoute from "./Components/ProtectedRoute";
 import SpaceLogin from "./Pages/Login";
@@ -29,33 +29,39 @@ import LoyaltyCheckout from "./LoyaltyPages/LoyaltyCheckout";
 import AboutUs from "./Pages/AboutUs";
 import ContactUs from "./Pages/ContactUs";
 
-
 const Home = () => (
   <>
     <Hero />
     <HomePage />
-    
   </>
 );
 
 function AppContent() {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
+  const prevPath = useRef(location.pathname);
 
   // Define pages where header/footer should be hidden
   const hideLayout = location.pathname.startsWith("/order-success");
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 700);
+    // On first mount — just hide the initial loader after 1500ms
+    if (prevPath.current === location.pathname) {
+      const timer = setTimeout(() => setLoading(false), 1500);
+      return () => clearTimeout(timer);
+    }
 
-    return () => clearTimeout(timer);
-  }, [location.pathname]); // Triggered on path change
+    // On navigation — show loader then hide it
+    prevPath.current = location.pathname;
+    const show = setTimeout(() => setLoading(true),    0);
+    const hide = setTimeout(() => setLoading(false), 1500);
+    return () => {
+      clearTimeout(show);
+      clearTimeout(hide);
+    };
+  }, [location.pathname]);
 
   if (loading) return <LoadingPage />;
-
-  
 
   return (
     <>
@@ -64,8 +70,6 @@ function AppContent() {
 
       <Routes>
         <Route path="/apple" element={<AppleSection />} />
-
-        
 
         {/* ================= CHECKOUT (PROTECTED) ================= */}
         <Route
@@ -77,9 +81,9 @@ function AppContent() {
           }
         />
 
-      <Route path="/order-success/:orderId" element={<OrderSuccess />} />
+        <Route path="/order-success/:orderId" element={<OrderSuccess />} />
 
-<Route path="/product/:param/:coupon?" element={<ProductDetails />} />
+        <Route path="/product/:param/:coupon?" element={<ProductDetails />} />
 
         <Route path="/" element={<Home />} />
 
@@ -91,14 +95,13 @@ function AppContent() {
 
         <Route path="/deal-promo/:id" element={<DealPromo />} />
 
-        <Route path="/loyalty-coupon" element={<LoyaltyCoupon/>} />
+        <Route path="/loyalty-coupon" element={<LoyaltyCoupon />} />
 
-        <Route path="/loyalty-checkout/:slug" element={<LoyaltyCheckout/>} />
+        <Route path="/loyalty-checkout/:slug" element={<LoyaltyCheckout />} />
 
-        <Route path="/about" element={<AboutUs/>} />
-        
-        <Route path="/contact" element={<ContactUs/>} />
+        <Route path="/about" element={<AboutUs />} />
 
+        <Route path="/contact" element={<ContactUs />} />
 
         {/* ================= PROFILE (PROTECTED) ================= */}
         <Route
@@ -129,12 +132,13 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+
         {/* ================= Addresses (PROTECTED) ================= */}
         <Route
           path="/addresses"
           element={
             <ProtectedRoute>
-              <Addresses/>
+              <Addresses />
             </ProtectedRoute>
           }
         />

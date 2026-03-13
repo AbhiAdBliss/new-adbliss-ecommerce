@@ -549,7 +549,7 @@ function ProductCard({ item, index }) {
    APPLE SECTION
 ══════════════════════════════════════════════════════════════════════ */
 export default function AppleSection() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("All");
 
   const filtered =
@@ -656,69 +656,7 @@ export default function AppleSection() {
             </Typography>
           </Motion.div>
 
-          <Motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.65 }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                gap: 2,
-                flexWrap: "wrap",
-                justifyContent: "center",
-              }}
-            >
-              <Button
-                variant="contained"
-                endIcon={<KeyboardArrowRightIcon />}
-                onClick={() =>
-                  document
-                    .getElementById("products-section")
-                    .scrollIntoView({ behavior: "smooth" })
-                }
-                sx={{
-                  bgcolor: "#2F80ED",
-                  color: "#fff",
-                  fontWeight: 700,
-                  px: 3.5,
-                  py: 1.4,
-                  borderRadius: 3,
-                  textTransform: "none",
-                  fontSize: "0.95rem",
-                  boxShadow: "0 8px 24px rgba(47,128,237,0.4)",
-                  "&:hover": {
-                    bgcolor: "#1e6fd9",
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 12px 32px rgba(47,128,237,0.5)",
-                  },
-                  transition: "all 0.25s",
-                }}
-              >
-                Shop Now
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={() => navigate("/")}
-                sx={{
-                  borderColor: "rgba(255,255,255,0.35)",
-                  color: "#fff",
-                  fontWeight: 600,
-                  px: 3,
-                  py: 1.4,
-                  borderRadius: 3,
-                  textTransform: "none",
-                  fontSize: "0.95rem",
-                  "&:hover": {
-                    borderColor: "#fff",
-                    bgcolor: "rgba(255,255,255,0.08)",
-                  },
-                }}
-              >
-                Learn More
-              </Button>
-            </Box>
-          </Motion.div>
+          
         </Box>
 
         {/* Scroll indicator */}
