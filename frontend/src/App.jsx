@@ -26,6 +26,8 @@ import LoadingPage from "./Loading/LoadingPage";
 import Addresses from "./Profile/Addresses";
 import LoyaltyCoupon from "./LoyaltyPages/LoyaltyCoupon";
 import LoyaltyCheckout from "./LoyaltyPages/LoyaltyCheckout";
+import AboutUs from "./Pages/AboutUs";
+import ContactUs from "./Pages/ContactUs";
 
 
 const Home = () => (
@@ -92,6 +94,10 @@ function AppContent() {
         <Route path="/loyalty-coupon" element={<LoyaltyCoupon/>} />
 
         <Route path="/loyalty-checkout/:slug" element={<LoyaltyCheckout/>} />
+
+        <Route path="/about" element={<AboutUs/>} />
+        
+        <Route path="/contact" element={<ContactUs/>} />
 
 
         {/* ================= PROFILE (PROTECTED) ================= */}

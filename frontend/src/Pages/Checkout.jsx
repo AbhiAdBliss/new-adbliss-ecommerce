@@ -11,21 +11,139 @@ import {
   CircularProgress,
   Checkbox,
   FormControlLabel,
-  Avatar,
   Backdrop,
   Stack,
+  Chip,
+  Tooltip,
+  Container,
 } from "@mui/material";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import { useCart } from "../context/useCart";
 import { useNavigate } from "react-router-dom";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import LockIcon from "@mui/icons-material/Lock";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import VerifiedIcon from "@mui/icons-material/Verified";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import coinimg from "../assets/AppleS-imgs/coin-img.png";
 
+/* ─── Step Indicator ─────────────────────────────────────────────────── */
+const STEPS = ["Cart", "Shipping", "Payment"];
 
+function StepIndicator({ current = 1 }) {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        mb: { xs: 4, md: 5 },
+        gap: 0,
+      }}
+    >
+      {STEPS.map((label, i) => {
+        const done = i < current;
+        const active = i === current;
+        return (
+          <React.Fragment key={label}>
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.8 }}>
+              <Box
+                sx={{
+                  width: { xs: 32, md: 38 },
+                  height: { xs: 32, md: 38 },
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor: done ? "#22c55e" : active ? "#1e293b" : "#e2e8f0",
+                  color: done || active ? "#fff" : "#94a3b8",
+                  fontWeight: 800,
+                  fontSize: { xs: "0.78rem", md: "0.85rem" },
+                  transition: "all 0.3s",
+                  boxShadow: active ? "0 4px 14px rgba(30,41,59,0.25)" : "none",
+                }}
+              >
+                {done ? <CheckCircleIcon sx={{ fontSize: 18 }} /> : i + 1}
+              </Box>
+              <Typography
+                sx={{
+                  fontSize: { xs: "0.68rem", md: "0.75rem" },
+                  fontWeight: active ? 700 : 500,
+                  color: active ? "#1e293b" : done ? "#22c55e" : "#94a3b8",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {label}
+              </Typography>
+            </Box>
+            {i < STEPS.length - 1 && (
+              <Box
+                sx={{
+                  flex: 1,
+                  height: 2,
+                  maxWidth: { xs: 40, md: 80 },
+                  bgcolor: done ? "#22c55e" : "#e2e8f0",
+                  mx: { xs: 1, md: 2 },
+                  mb: 2.5,
+                  transition: "background 0.3s",
+                }}
+              />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </Box>
+  );
+}
 
+/* ─── Trust Badge Row ────────────────────────────────────────────────── */
+function TrustBadges() {
+  const badges = [
+    { icon: <LockIcon sx={{ fontSize: 15, color: "#22c55e" }} />, text: "SSL Secured" },
+    { icon: <VerifiedIcon sx={{ fontSize: 15, color: "#2F80ED" }} />, text: "100% Genuine" },
+    { icon: <LocalShippingIcon sx={{ fontSize: 15, color: "#f59e0b" }} />, text: "Free Delivery" },
+    { icon: <CreditCardIcon sx={{ fontSize: 15, color: "#a855f7" }} />, text: "Safe Payments" },
+  ];
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: { xs: 1, md: 1.5 },
+        justifyContent: { xs: "center", md: "flex-start" },
+        mb: 3,
+      }}
+    >
+      {badges.map((b, i) => (
+        <Box
+          key={i}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0.6,
+            bgcolor: "#f8fafc",
+            border: "1px solid #e2e8f0",
+            borderRadius: 2,
+            px: 1.2,
+            py: 0.5,
+          }}
+        >
+          {b.icon}
+          <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: "#475569" }}>
+            {b.text}
+          </Typography>
+        </Box>
+      ))}
+    </Box>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   CHECKOUT
+══════════════════════════════════════════════════════════════════════ */
 export default function Checkout() {
-
   const { cartItems, clearCart, removeFromCart } = useCart();
   const navigate = useNavigate();
 
@@ -37,12 +155,10 @@ export default function Checkout() {
     }
   }, []);
 
-
- const [user] = useState(() => {
-  const stored = localStorage.getItem("user");
-  // Added a check to ensure 'stored' is valid JSON
-  return (stored && stored !== "undefined") ? JSON.parse(stored) : null;
-});
+  const [user] = useState(() => {
+    const stored = localStorage.getItem("user");
+    return stored && stored !== "undefined" ? JSON.parse(stored) : null;
+  });
 
   const Protectfee = 0;
 
@@ -67,17 +183,11 @@ export default function Checkout() {
   });
 
   const handleChange = (field) => (e) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: e.target.value,
-    }));
+    setForm((prev) => ({ ...prev, [field]: e.target.value }));
   };
 
   useEffect(() => {
-    if (
-      cartItems.length === 0 &&
-      window.location.pathname !== "/order-success"
-    ) {
+    if (cartItems.length === 0 && window.location.pathname !== "/order-success") {
       navigate("/apple");
     }
   }, [cartItems, navigate]);
@@ -87,7 +197,6 @@ export default function Checkout() {
       typeof item.price === "string"
         ? Number(item.price.replace(/,/g, ""))
         : Number(item.price);
-
     return sum + price * item.quantity;
   }, 0);
 
@@ -100,16 +209,10 @@ export default function Checkout() {
     if (coupon.trim().toUpperCase() === "SAVE10") {
       const disc = Math.round(subtotal * 0.1);
       setDiscount(disc);
-      setCouponMsg({
-        type: "success",
-        text: `🎉 You saved ₹${disc}`,
-      });
+      setCouponMsg({ type: "success", text: `🎉 Coupon applied! You saved ₹${disc.toLocaleString("en-IN")}` });
     } else {
       setDiscount(0);
-      setCouponMsg({
-        type: "error",
-        text: "❌ Invalid coupon",
-      });
+      setCouponMsg({ type: "error", text: "❌ Invalid coupon code. Try SAVE10" });
     }
   };
 
@@ -156,27 +259,22 @@ export default function Checkout() {
             const verifyRes = await fetch("/api/verify-payment", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                ...response,
-                userId: user.id,
-                amount: total,
-              }),
+              body: JSON.stringify({ ...response, userId: user.id, amount: total }),
             });
 
             const verifyData = await verifyRes.json();
-            if (!verifyData.success)
-              throw new Error("Payment verification failed");
+            if (!verifyData.success) throw new Error("Payment verification failed");
 
             const res = await fetch("/api/order", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-             body: JSON.stringify({
-  userId: user.id,
-  amount: total,
-  coinsUsed: coinsUsed,
-  address: form,
-  items: cartItems
-}),
+              body: JSON.stringify({
+                userId: user.id,
+                amount: total,
+                coinsUsed: coinsUsed,
+                address: form,
+                items: cartItems,
+              }),
             });
 
             const data = await res.json();
@@ -194,11 +292,7 @@ export default function Checkout() {
             setLoading(false);
           }
         },
-        prefill: {
-          name: form.name,
-          contact: form.phone,
-          email: form.email,
-        },
+        prefill: { name: form.name, contact: form.phone, email: form.email },
         theme: { color: "#2F80ED" },
       });
 
@@ -212,500 +306,629 @@ export default function Checkout() {
 
   return (
     <>
-      <Backdrop
-        open={loading}
-        sx={{
-          color: "#fff",
-          zIndex: 9999,
-          backgroundColor: "rgba(0,0,0,0.85)",
-        }}
-      >
+      {/* ── LOADER ────────────────────────────────────────────────────── */}
+      <Backdrop open={loading} sx={{ color: "#fff", zIndex: 9999, backgroundColor: "rgba(0,0,0,0.88)" }}>
         <Stack spacing={3} alignItems="center">
           <ShoppingBagIcon
             sx={{
-              fontSize: 60,
+              fontSize: 64,
               color: "#2F80ED",
               animation: "pulse 1.5s infinite",
+              "@keyframes pulse": {
+                "0%": { transform: "scale(1)" },
+                "50%": { transform: "scale(1.18)" },
+                "100%": { transform: "scale(1)" },
+              },
             }}
           />
-          <Typography variant="h5">Processing your payment...</Typography>
+          <Typography variant="h5" fontWeight={700}>Processing your payment...</Typography>
+          <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: "0.9rem" }}>
+            Please do not close this window
+          </Typography>
           <CircularProgress size={45} thickness={4} sx={{ color: "#2F80ED" }} />
         </Stack>
       </Backdrop>
 
       <Box
         sx={{
-          "@keyframes pulse": {
-            "0%": { transform: "scale(1)" },
-            "50%": { transform: "scale(1.15)" },
-            "100%": { transform: "scale(1)" },
-          },
-          pt: 8,
-          px: { xs: 2, md: 6 },
-          pb: 6,
+          pt: { xs: 10, md: 12 },
+          pb: { xs: 8, md: 10 },
           minHeight: "100vh",
-          background: "linear-gradient(to right, #f8fafc, #eef2f7)",
+          background: "linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%)",
         }}
       >
-        <Typography
-          variant="h4"
-          sx={{ fontWeight: "bold", mb: 5, color: "#1e293b" }}
-        >
-          Secure Checkout
-        </Typography>
+        <Container maxWidth="xl">
 
-        <form onSubmit={handleOrder}>
-          <Grid container spacing={4}>
-            <Grid item xs={12} md={8}>
-              <Paper
-                elevation={4}
-                sx={{
-                  p: 4,
-                  borderRadius: 3,
-                  background: "#ffffff",
-                  boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
-                }}
-              >
-                {authError && (
-                  <Alert severity="warning" sx={{ mb: 2 }}>
-                    {authError}
-                  </Alert>
-                )}
+          {/* ── Page Header ──────────────────────────────────────────── */}
+          <Box sx={{ mb: { xs: 3, md: 4 } }}>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 900,
+                color: "#0f172a",
+                fontSize: { xs: "1.6rem", md: "2rem" },
+                letterSpacing: "-0.02em",
+                mb: 0.5,
+              }}
+            >
+              Secure Checkout
+            </Typography>
+            <Typography sx={{ color: "#64748b", fontSize: "0.9rem" }}>
+              Complete your order in just a few steps
+            </Typography>
+          </Box>
 
-                <Box sx={{ maxHeight: 450, overflowY: "auto", pr: 1 }}>
-                  {cartItems.map((item, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        display: "flex",
-                        // Stack vertically on extra small mobile, horizontal on sm and up
-                        flexDirection: { xs: "column", sm: "row" },
-                        alignItems: { xs: "flex-start", sm: "center" },
-                        justifyContent: "space-between",
-                        mb: 2,
-                        p: { xs: 1.5, sm: 2 },
-                        borderRadius: 3,
-                        background: "#ffffff",
-                        border: "1px solid #f1f5f9",
-                        transition: "all 0.2s ease",
-                        "&:hover": {
-                          borderColor: "#e2e8f0",
-                          boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
-                        },
-                      }}
-                    >
-                      {/* Left Section: Image + Info */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          gap: { xs: 1.5, sm: 2.5 },
-                          width: "100%",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            width: {
-                              xs: 80,
-                              sm: 100,
-                              md: 140,
-                              lg: 180,
-                              xl: 200,
-                            },
-                            height: {
-                              xs: 80,
-                              sm: 100,
-                              md: 140,
-                              lg: 180,
-                              xl: 200,
-                            },
-                            flexShrink: 0,
-                            borderRadius: 3,
-                            overflow: "hidden",
-                            bgcolor: "#ffffff",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            border: "1px solid #f1f5f9",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
-                          }}
-                        >
-                          <Box
-                            component="img"
-                            src={item.image}
-                            alt={item.name}
-                            sx={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "contain",
-                              p: { xs: 1, md: 2 },
-                              transition:
-                                "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                              "&:hover": {
-                                transform: "scale(1.08)",
-                              },
-                            }}
-                          />
-                        </Box>
+          {/* ── Step Indicator ───────────────────────────────────────── */}
+          <StepIndicator current={1} />
 
-                        {/* Product Details */}
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography
-                            noWrap
-                            sx={{
-                              fontWeight: 600,
-                              fontSize: { xs: "0.9rem", md: "1rem" },
-                              color: "#1e293b",
-                              lineHeight: 1.2,
-                              mb: 0.5,
-                            }}
-                          >
-                            {item.name}
-                          </Typography>
+          <form onSubmit={handleOrder}>
+            <Grid container spacing={{ xs: 3, md: 4 }} alignItems="flex-start">
 
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: "text.secondary",
-                              fontSize: "0.85rem",
-                            }}
-                          >
-                            Quantity: {item.quantity}
-                          </Typography>
+              {/* ══ LEFT: Cart + Shipping ══════════════════════════════ */}
+              <Grid item xs={12} lg={8}>
+                <Stack spacing={3}>
 
-                          <Button
-                            size="small"
-                            startIcon={
-                              <DeleteOutlineIcon sx={{ fontSize: 18 }} />
-                            }
-                            onClick={() => removeFromCart(item.id)}
-                            sx={{
-                              mt: 1,
-                              color: "#fc6363ff",
-                              fontSize: "0.75rem",
-                              textTransform: "none",
-                              p: 0,
-                              minWidth: "auto",
-                              "&:hover": {
-                                color: "#ef4444",
-                                bgcolor: "transparent",
-                              },
-                            }}
-                          >
-                            Remove
-                          </Button>
-                        </Box>
-                      </Box>
-
-                      {/* Right Section: Price */}
-                      <Box
-                        sx={{
-                          width: { xs: "100%", sm: "auto" },
-                          textAlign: { xs: "right", sm: "right" },
-                          mt: { xs: 1, sm: 0 },
-                          pt: { xs: 1, sm: 0 },
-                          borderTop: { xs: "1px solid #f1f5f9", sm: "none" },
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            fontWeight: 700,
-                            fontSize: { xs: "1rem", sm: "1.1rem" },
-                            color: "#0f172a",
-                          }}
-                        >
-                          ₹{Number(item.price).toLocaleString("en-IN")}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  ))}
-                </Box>
-
-                <Divider sx={{ my: 4 }} />
-
-                <Typography
-                  variant="h6"
-                  sx={{ fontWeight: "bold", mb: 3, textAlign: "center" }}
-                >
-                  Shipping Details
-                </Typography>
-
-                <Grid container spacing={4} sx={{ mt: 1 }}>
-                  {/* Row 1: Name and Phone */}
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Full Name"
-                      size="medium"
-                      value={form.name}
-                      onChange={handleChange("name")}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Phone"
-                      size="medium"
-                      value={form.phone}
-                      onChange={handleChange("phone")}
-                      inputProps={{ maxLength: 10 }}
-                    />
-                  </Grid>
-
-                  {/* Row 2: Email */}
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Email Address"
-                      size="medium"
-                      type="email"
-                      value={form.email}
-                      onChange={handleChange("email")}
-                    />
-                  </Grid>
-
-                  {/* Row 3: Address (Full Width) */}
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Street Address"
-                      size="medium"
-                      multiline
-                      value={form.address1}
-                      onChange={handleChange("address1")}
-                    />
-                  </Grid>
-
-                  {/* Row 4: City and State */}
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="City"
-                      size="medium"
-                      value={form.city}
-                      onChange={handleChange("city")}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="State"
-                      size="medium"
-                      value={form.state}
-                      onChange={handleChange("state")}
-                    />
-                  </Grid>
-
-                  {/* Row 5: Pincode and Country */}
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Pincode"
-                      size="medium"
-                      value={form.pincode}
-                      onChange={handleChange("pincode")}
-                      inputProps={{ maxLength: 6 }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Country"
-                      size="medium"
-                      value={form.country}
-                      onChange={handleChange("country")}
-                    />
-                  </Grid>
-                </Grid>
-
-                <Divider sx={{ my: 4 }} />
-
-                <Box sx={{ display: "flex", gap: 2 }}>
-                  <TextField
-                    label="Coupon Code"
-                    value={coupon}
-                    onChange={(e) => setCoupon(e.target.value)}
-                  />
-                  <Button
-                    variant="outlined"
-                    onClick={applyCoupon}
+                  {/* ── Cart Items ─────────────────────────────────── */}
+                  <Paper
+                    elevation={0}
                     sx={{
-                      borderColor: "#2F80ED",
-                      color: "#2F80ED",
-                      fontWeight: 600,
+                      borderRadius: 4,
+                      border: "1px solid #e2e8f0",
+                      overflow: "hidden",
+                      boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
                     }}
                   >
-                    Apply
-                  </Button>
+                    {/* Card Header */}
+                    <Box
+                      sx={{
+                        px: { xs: 2.5, md: 3.5 },
+                        py: 2,
+                        borderBottom: "1px solid #f1f5f9",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        bgcolor: "#fafbfc",
+                      }}
+                    >
+                      <ShoppingBagIcon sx={{ color: "#1e293b", fontSize: 20 }} />
+                      <Typography fontWeight={800} fontSize="1rem" color="#0f172a">
+                        Your Cart
+                      </Typography>
+                      <Chip
+                        label={`${cartItems.length} item${cartItems.length !== 1 ? "s" : ""}`}
+                        size="small"
+                        sx={{ bgcolor: "#1e293b", color: "#fff", fontWeight: 700, fontSize: "0.7rem", ml: "auto" }}
+                      />
+                    </Box>
+
+                    <Box sx={{ p: { xs: 2, md: 3 }, maxHeight: 420, overflowY: "auto" }}>
+                      {authError && (
+                        <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>{authError}</Alert>
+                      )}
+
+                      <Stack spacing={2}>
+                        {cartItems.map((item, index) => (
+                          <Box
+                            key={index}
+                            sx={{
+                              display: "flex",
+                              flexDirection: { xs: "column", sm: "row" },
+                              alignItems: { xs: "flex-start", sm: "center" },
+                              gap: { xs: 2, sm: 2.5 },
+                              p: { xs: 2, md: 2.5 },
+                              borderRadius: 3,
+                              bgcolor: "#fff",
+                              border: "1px solid #f1f5f9",
+                              transition: "all 0.2s",
+                              "&:hover": {
+                                borderColor: "#e2e8f0",
+                                boxShadow: "0 4px 14px rgba(0,0,0,0.04)",
+                              },
+                            }}
+                          >
+                            {/* Image */}
+                            <Box
+                              sx={{
+                                width: { xs: 80, sm: 100, md: 110 },
+                                height: { xs: 80, sm: 100, md: 110 },
+                                flexShrink: 0,
+                                borderRadius: 2.5,
+                                bgcolor: "#f8fafc",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                border: "1px solid #f1f5f9",
+                              }}
+                            >
+                              <Box
+                                component="img"
+                                src={item.image}
+                                alt={item.name}
+                                sx={{
+                                  width: "85%",
+                                  height: "85%",
+                                  objectFit: "contain",
+                                  transition: "transform 0.3s ease",
+                                  "&:hover": { transform: "scale(1.08)" },
+                                }}
+                              />
+                            </Box>
+
+                            {/* Info */}
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                              <Typography
+                                sx={{
+                                  fontWeight: 700,
+                                  fontSize: { xs: "0.88rem", md: "0.95rem" },
+                                  color: "#0f172a",
+                                  lineHeight: 1.3,
+                                  mb: 0.5,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: { xs: "normal", sm: "nowrap" },
+                                }}
+                              >
+                                {item.name}
+                              </Typography>
+                              <Typography sx={{ fontSize: "0.8rem", color: "#94a3b8", mb: 0.5 }}>
+                                Brand: Apple
+                              </Typography>
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                                <Chip
+                                  label={`Qty: ${item.quantity}`}
+                                  size="small"
+                                  sx={{ bgcolor: "#f1f5f9", color: "#475569", fontWeight: 600, fontSize: "0.7rem" }}
+                                />
+                                <Chip
+                                  label="In Stock"
+                                  size="small"
+                                  sx={{ bgcolor: "#dcfce7", color: "#16a34a", fontWeight: 600, fontSize: "0.7rem" }}
+                                />
+                              </Box>
+                              <Button
+                                size="small"
+                                startIcon={<DeleteOutlineIcon sx={{ fontSize: 15 }} />}
+                                onClick={() => removeFromCart(item.id)}
+                                sx={{
+                                  mt: 1,
+                                  color: "#ef4444",
+                                  fontSize: "0.72rem",
+                                  textTransform: "none",
+                                  p: 0,
+                                  minWidth: "auto",
+                                  "&:hover": { color: "#dc2626", bgcolor: "transparent" },
+                                }}
+                              >
+                                Remove
+                              </Button>
+                            </Box>
+
+                            {/* Price */}
+                            <Box sx={{ textAlign: "right", flexShrink: 0, alignSelf: { xs: "flex-end", sm: "center" } }}>
+                              <Typography sx={{ fontWeight: 800, fontSize: { xs: "1rem", md: "1.1rem" }, color: "#0f172a" }}>
+                                ₹{Number(item.price).toLocaleString("en-IN")}
+                              </Typography>
+                              <Typography sx={{ fontSize: "0.72rem", color: "#94a3b8" }}>
+                                per unit
+                              </Typography>
+                            </Box>
+                          </Box>
+                        ))}
+                      </Stack>
+                    </Box>
+                  </Paper>
+
+                  {/* ── Shipping Details ───────────────────────────── */}
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      borderRadius: 4,
+                      border: "1px solid #e2e8f0",
+                      overflow: "hidden",
+                      boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
+                    }}
+                  >
+                    {/* Card Header */}
+                    <Box
+                      sx={{
+                        px: { xs: 2.5, md: 3.5 },
+                        py: 2,
+                        borderBottom: "1px solid #f1f5f9",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        bgcolor: "#fafbfc",
+                      }}
+                    >
+                      <LocalShippingIcon sx={{ color: "#1e293b", fontSize: 20 }} />
+                      <Typography fontWeight={800} fontSize="1rem" color="#0f172a">
+                        Shipping Details
+                      </Typography>
+                    </Box>
+
+                    <Box sx={{ p: { xs: 2.5, md: 3.5 } }}>
+                      <Grid container spacing={2.5}>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            fullWidth required label="Full Name"
+                            value={form.name} onChange={handleChange("name")}
+                            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            fullWidth required label="Phone Number"
+                            value={form.phone} onChange={handleChange("phone")}
+                            inputProps={{ maxLength: 10 }}
+                            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth required label="Email Address" type="email"
+                            value={form.email} onChange={handleChange("email")}
+                            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth required label="Street Address" multiline rows={2}
+                            value={form.address1} onChange={handleChange("address1")}
+                            placeholder="House no., Building, Street, Area"
+                            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            fullWidth required label="City"
+                            value={form.city} onChange={handleChange("city")}
+                            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            fullWidth required label="State"
+                            value={form.state} onChange={handleChange("state")}
+                            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            fullWidth required label="Pincode"
+                            value={form.pincode} onChange={handleChange("pincode")}
+                            inputProps={{ maxLength: 6 }}
+                            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            fullWidth required label="Country"
+                            value={form.country} onChange={handleChange("country")}
+                            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+                          />
+                        </Grid>
+                      </Grid>
+
+                      {/* Delivery note */}
+                      <Box
+                        sx={{
+                          mt: 3,
+                          p: 2,
+                          bgcolor: "#f0fdf4",
+                          borderRadius: 2.5,
+                          border: "1px solid #bbf7d0",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1.5,
+                        }}
+                      >
+                        <LocalShippingIcon sx={{ color: "#16a34a", fontSize: 20, flexShrink: 0 }} />
+                        <Box>
+                          <Typography sx={{ fontSize: "0.82rem", fontWeight: 700, color: "#16a34a" }}>
+                            Free Delivery
+                          </Typography>
+                          <Typography sx={{ fontSize: "0.78rem", color: "#374151" }}>
+                            Estimated delivery in <strong>3–5 business days</strong> · Same-day dispatch before 2 PM
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Paper>
+
+                  {/* ── Coupon Code ────────────────────────────────── */}
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      borderRadius: 4,
+                      border: "1px solid #e2e8f0",
+                      overflow: "hidden",
+                      boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        px: { xs: 2.5, md: 3.5 },
+                        py: 2,
+                        borderBottom: "1px solid #f1f5f9",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        bgcolor: "#fafbfc",
+                      }}
+                    >
+                      <LocalOfferIcon sx={{ color: "#1e293b", fontSize: 20 }} />
+                      <Typography fontWeight={800} fontSize="1rem" color="#0f172a">
+                        Coupon Code
+                      </Typography>
+                    </Box>
+
+                    <Box sx={{ p: { xs: 2.5, md: 3.5 } }}>
+                      <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", sm: "row" } }}>
+                        <TextField
+                          fullWidth
+                          label="Enter coupon code"
+                          placeholder="e.g. SAVE10"
+                          value={coupon}
+                          onChange={(e) => setCoupon(e.target.value)}
+                          sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
+                        />
+                        <Button
+                          variant="outlined"
+                          onClick={applyCoupon}
+                          sx={{
+                            borderColor: "#1e293b",
+                            color: "#1e293b",
+                            fontWeight: 700,
+                            borderRadius: 2.5,
+                            px: 3,
+                            whiteSpace: "nowrap",
+                            minWidth: { xs: "100%", sm: "auto" },
+                            "&:hover": { bgcolor: "#1e293b", color: "#fff", borderColor: "#1e293b" },
+                          }}
+                        >
+                          Apply
+                        </Button>
+                      </Box>
+                      {couponMsg && (
+                        <Alert severity={couponMsg.type} sx={{ mt: 2, borderRadius: 2 }}>
+                          {couponMsg.text}
+                        </Alert>
+                      )}
+                      {paymentError && (
+                        <Alert severity="error" sx={{ mt: 2, borderRadius: 2 }}>{paymentError}</Alert>
+                      )}
+                    </Box>
+                  </Paper>
+
+                </Stack>
+              </Grid>
+
+              {/* ══ RIGHT: Order Summary ═══════════════════════════════ */}
+              <Grid item xs={12} lg={4}>
+                <Box sx={{ position: { lg: "sticky" }, top: { lg: 120 } }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      borderRadius: 4,
+                      border: "1px solid #e2e8f0",
+                      overflow: "hidden",
+                      boxShadow: "0 8px 32px rgba(0,0,0,0.06)",
+                    }}
+                  >
+                    {/* Header */}
+                    <Box
+                      sx={{
+                        px: 3,
+                        py: 2.5,
+                        borderBottom: "1px solid #f1f5f9",
+                        bgcolor: "#0f172a",
+                      }}
+                    >
+                      <Typography fontWeight={800} fontSize="1rem" color="#fff">
+                        Order Summary
+                      </Typography>
+                      <Typography sx={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.5)", mt: 0.3 }}>
+                        {cartItems.length} item{cartItems.length !== 1 ? "s" : ""} in your cart
+                      </Typography>
+                    </Box>
+
+                    <Box sx={{ p: { xs: 2.5, md: 3 } }}>
+
+                      {/* Cart item mini list */}
+                      <Stack spacing={1.5} sx={{ mb: 3 }}>
+                        {cartItems.map((item, i) => (
+                          <Box key={i} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1 }}>
+                            <Typography
+                              sx={{
+                                fontSize: "0.82rem",
+                                color: "#475569",
+                                flex: 1,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {item.name}
+                            </Typography>
+                            <Typography sx={{ fontSize: "0.82rem", fontWeight: 700, color: "#0f172a", flexShrink: 0 }}>
+                              ₹{Number(item.price).toLocaleString("en-IN")}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Stack>
+
+                      <Divider sx={{ borderStyle: "dashed", mb: 2.5 }} />
+
+                      {/* Pricing breakdown */}
+                      <Stack spacing={1.5} sx={{ mb: 2.5 }}>
+                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                          <Typography sx={{ fontSize: "0.88rem", color: "#64748b" }}>Subtotal</Typography>
+                          <Typography sx={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>
+                            ₹{subtotal.toLocaleString("en-IN")}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                          <Typography sx={{ fontSize: "0.88rem", color: "#64748b" }}>Delivery</Typography>
+                          <Typography sx={{ fontSize: "0.88rem", fontWeight: 600, color: "#16a34a" }}>
+                            FREE
+                          </Typography>
+                        </Box>
+                        {discount > 0 && (
+                          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                            <Typography sx={{ fontSize: "0.88rem", color: "#16a34a" }}>Coupon Discount</Typography>
+                            <Typography sx={{ fontSize: "0.88rem", fontWeight: 700, color: "#16a34a" }}>
+                              −₹{discount.toLocaleString("en-IN")}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Stack>
+
+                      {/* Coins toggle */}
+                      <Box
+                        sx={{
+                          bgcolor: "#fffbeb",
+                          border: "1px solid #fde68a",
+                          borderRadius: 3,
+                          p: 1.8,
+                          mb: 2.5,
+                        }}
+                      >
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={useCoins}
+                              onChange={(e) => setUseCoins(e.target.checked)}
+                              size="small"
+                              sx={{ color: "#f59e0b", "&.Mui-checked": { color: "#f59e0b" } }}
+                            />
+                          }
+                          label={
+                            <Box sx={{ ml: 0.5 }}>
+                              <Typography sx={{ fontSize: "0.83rem", fontWeight: 700, color: "#1e293b" }}>
+                                Use Loyalty Coins
+                              </Typography>
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.2 }}>
+                                <Typography sx={{ fontSize: "0.75rem", color: "#64748b" }}>
+                                  Available:
+                                </Typography>
+                                <Typography sx={{ fontSize: "0.75rem", fontWeight: 800, color: "#d97706" }}>
+                                  {user?.coins ?? 0}
+                                </Typography>
+                                <Box
+                                  component="img"
+                                  src={coinimg}
+                                  alt="coins"
+                                  sx={{ width: 15, height: 15, objectFit: "contain", filter: "drop-shadow(0px 1px 1px rgba(0,0,0,0.1))" }}
+                                />
+                              </Box>
+                            </Box>
+                          }
+                          sx={{ m: 0, alignItems: "flex-start" }}
+                        />
+                        {useCoins && (
+                          <Box
+                            sx={{
+                              mt: 1.2,
+                              pt: 1.2,
+                              borderTop: "1px dashed #fde68a",
+                              display: "flex",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <Typography sx={{ fontSize: "0.82rem", color: "#16a34a", fontWeight: 600 }}>
+                              Coins Applied
+                            </Typography>
+                            <Typography sx={{ fontSize: "0.82rem", fontWeight: 800, color: "#16a34a" }}>
+                              −₹{coinsUsed.toLocaleString("en-IN")}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+
+                      <Divider sx={{ borderStyle: "dashed", mb: 2.5 }} />
+
+                      {/* Total */}
+                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", mb: 3 }}>
+                        <Box>
+                          <Typography sx={{ fontSize: "0.82rem", color: "#64748b", mb: 0.3 }}>Total Amount</Typography>
+                          <Typography sx={{ fontSize: "0.7rem", color: "#94a3b8" }}>Incl. all taxes</Typography>
+                        </Box>
+                        <Box sx={{ textAlign: "right" }}>
+                          <Typography sx={{ fontSize: { xs: "1.6rem", md: "1.9rem" }, fontWeight: 900, color: "#0f172a", lineHeight: 1 }}>
+                            ₹{total.toLocaleString("en-IN")}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      {/* Submit button */}
+                      <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        disabled={loading}
+                        startIcon={!loading && <LockIcon sx={{ fontSize: 18 }} />}
+                        sx={{
+                          py: { xs: 1.6, md: 1.8 },
+                          fontSize: "0.95rem",
+                          fontWeight: 800,
+                          borderRadius: 3,
+                          textTransform: "none",
+                          bgcolor: "#0f172a",
+                          letterSpacing: "0.02em",
+                          "&:hover": {
+                            bgcolor: "#1e293b",
+                            transform: "translateY(-2px)",
+                            boxShadow: "0 10px 24px rgba(15,23,42,0.25)",
+                          },
+                          "&.Mui-disabled": { bgcolor: "#cbd5e1", color: "#94a3b8" },
+                          transition: "all 0.2s",
+                        }}
+                      >
+                        {loading
+                          ? <CircularProgress size={22} sx={{ color: "#fff" }} />
+                          : "Proceed to Payment"
+                        }
+                      </Button>
+
+                      {/* Trust badges */}
+                      <Box sx={{ mt: 2.5 }}>
+                        <TrustBadges />
+                      </Box>
+
+                      {/* Payment icons */}
+                      <Box sx={{ textAlign: "center", mt: 1 }}>
+                        <Typography sx={{ fontSize: "0.7rem", color: "#94a3b8", mb: 1 }}>
+                          Secured by Razorpay · UPI · Cards · Net Banking
+                        </Typography>
+                        <Box sx={{ display: "flex", justifyContent: "center", gap: 1, flexWrap: "wrap" }}>
+                          {["UPI", "Visa", "Mastercard", "RuPay", "NetBanking"].map((p) => (
+                            <Box
+                              key={p}
+                              sx={{
+                                px: 1.2,
+                                py: 0.4,
+                                bgcolor: "#f8fafc",
+                                border: "1px solid #e2e8f0",
+                                borderRadius: 1,
+                                fontSize: "0.65rem",
+                                fontWeight: 700,
+                                color: "#475569",
+                              }}
+                            >
+                              {p}
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+
+                    </Box>
+                  </Paper>
                 </Box>
+              </Grid>
 
-                {couponMsg && (
-                  <Alert severity={couponMsg.type} sx={{ mt: 2 }}>
-                    {couponMsg.text}
-                  </Alert>
-                )}
-
-                {paymentError && (
-                  <Alert severity="error" sx={{ mt: 2 }}>
-                    {paymentError}
-                  </Alert>
-                )}
-              </Paper>
             </Grid>
-
-
-
-{/*  Order Summary */}
-
-
-            <Grid item xs={12} md={4} width={400}>
-  <Paper
-    elevation={0} 
-    sx={{
-      p: { xs: 2, md: 4 },
-      borderRadius: 4,
-      background: "#ffffff",
-      border: "1px solid #f1f5f9",
-      boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.05)",
-      position: "sticky",
-      top: 120,
-    }}
-  >
-    <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, color: "#0f172a" }}>
-      Order Summary
-    </Typography>
-
-    {/* Pricing Breakdown */}
-    <Stack spacing={1.5} sx={{ mb: 2 }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography color="text.secondary">Subtotal</Typography>
-        <Typography fontWeight={600}>₹{subtotal.toLocaleString("en-IN")}</Typography>
-      </Box>
-
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography color="text.secondary">Protection Fee</Typography>
-        <Typography fontWeight={600}>₹{Protectfee.toLocaleString("en-IN")}</Typography>
-      </Box>
-
-      {/* Coins Section */}
-     <Box 
-  sx={{ 
-    display: "flex", 
-    alignItems: "center", 
-    justifyContent: "space-between",
-    bgcolor: "#f8fafc", 
-    p: 1.5,
-    borderRadius: 3,
-    border: "1px solid #f1f5f9",
-    mt: 1
-  }}
->
-  <FormControlLabel
-    control={
-      <Checkbox
-        checked={useCoins}
-        onChange={(e) => setUseCoins(e.target.checked)}
-        sx={{ color: "#2F80ED", "&.Mui-checked": { color: "#2F80ED" } }}
-      />
-    }
-    label={
-      <Box sx={{ ml: 0.5 }}>
-        <Typography variant="body2" fontWeight={700} sx={{ color: "#1e293b" }}>
-          Use Loyalty Coupon
-        </Typography>
-        <Typography 
-  variant="caption" 
-  sx={{ 
-    display: "flex", 
-    alignItems: "center", 
-    gap: 0.5, 
-    color: "#64748b" 
-  }}
->
-  Available: <span style={{ fontWeight: 800, color: "#eab308" }}>
-    {user?.coins ?? 0}
-  </span>
-  
-  {/* Professional Image Icon Integration */}
-  <Box
-    component="img"
-    src={coinimg}
-    alt="coins"
-    sx={{
-      width: 16,     // Precise pixel control
-      height: 16,
-      ml: 0.2,       // Micro-margin for perfect spacing
-      objectFit: "contain",
-      // Optional: Add a subtle filter if the icon needs to pop more
-      filter: "drop-shadow(0px 1px 1px rgba(0,0,0,0.1))" 
-    }}
-  />
-</Typography>
-      </Box>
-    }
-  />
-</Box>
-
-      {useCoins && (
-        <Box sx={{ display: "flex", justifyContent: "space-between", px: 1.5 }}>
-          <Typography color="success.main" variant="body2" fontWeight={600}>
-            Coins Applied
-          </Typography>
-          <Typography color="success.main" fontWeight={700}>
-            -₹{coinsUsed.toLocaleString("en-IN")}
-          </Typography>
-        </Box>
-      )}
-    </Stack>
-
-    <Divider sx={{ my: 3, borderStyle: "dashed" }} />
-
-    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 4 }}>
-      <Typography variant="h6" fontWeight={800}>Total</Typography>
-      <Box sx={{ textAlign: "right" }}>
-        <Typography variant="h5" fontWeight={800} sx={{ color: "#1e293b" }}>
-          ₹{total.toLocaleString("en-IN")}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          Inclusive of all taxes
-        </Typography>
-      </Box>
-    </Box>
-
-    <Button
-      type="submit"
-      fullWidth
-      variant="contained"
-      disabled={loading}
-      startIcon={!loading && <LockIcon sx={{ fontSize: 18 }} />}
-      sx={{
-        py: 2,
-        fontSize: "1rem",
-        fontWeight: 700,
-        borderRadius: "14px",
-        textTransform: "none",
-        background: "#1e293b",
-        "&:hover": {
-          background: "#0f172a",
-          transform: "translateY(-2px)",
-          boxShadow: "0 10px 20px rgba(0,0,0,0.15)",
-        },
-      }}
-    >
-      {loading ? <CircularProgress size={24} sx={{ color: "#fff" }} /> : "Secure Checkout"}
-    </Button>
-  </Paper>
-</Grid>
-          </Grid>
-        </form>
+          </form>
+        </Container>
       </Box>
     </>
   );

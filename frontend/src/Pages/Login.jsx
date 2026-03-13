@@ -71,17 +71,20 @@ export default function SpaceLogin() {
     try {
       setLoading(true);
 
-      const res = await API.post("/api/login", {
-        email: formData.email,
-        password: formData.password,
-      });
+const res = await API.post("/api/login", {
+  email: formData.email,
+  password: formData.password,
+});
 
-    localStorage.setItem("user", JSON.stringify(res.data.user));
+// ✅ SAVE TOKEN (VERY IMPORTANT)
+localStorage.setItem("token", res.data.token);
+
+// Save user
+localStorage.setItem("user", JSON.stringify(res.data.user));
+
 window.dispatchEvent(new Event("userUpdated"));
 
-      window.dispatchEvent(new Event("userUpdated"));
-
-      navigate("/apple", { state: { user: res.data.user } });
+navigate("/apple");
 
     } catch (err) {
       console.error("LOGIN ERROR:", err);
